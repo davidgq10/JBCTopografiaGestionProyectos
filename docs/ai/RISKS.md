@@ -18,7 +18,7 @@ Estado: **Fase 3 activa; G3 pendiente**. Escala: probabilidad/impacto `B` baja, 
 | R-012 | UI saturada o móvil incompleto                           | M/A | tokens, whitespace, 360-first, estados y revisión independiente                                                                | CP-UX/F12             | UX                         |
 | R-013 | Subagentes editan mismos archivos                        | M/M | propietario único, rutas prohibidas, integración secuencial                                                                    | cada delegación       | Orquestador                |
 | R-014 | RF-013 reaparece                                         | M/A | ID descartado, test estático/E2E y revisión de navegación                                                                      | cada fase/F12         | Orquestador/Calidad        |
-| R-015 | Repositorio local aún sin Git ni historial remoto        | A/M | GitHub Actions y destino aprobados; inicializar, publicar y proteger `Main` con autenticación del propietario                  | antes de G3           | Orquestador + usuario      |
+| R-015 | Repositorio local sin Git ni historial remoto            | B/M | **cerrado 2026-07-24**: historial publicado, `Main` predeterminada/protegida y GitHub Actions verificado                       | cerrado antes de G3   | Orquestador + usuario      |
 | R-016 | Línea base grande deriva o pierde cobertura              | M/A | IDs estables, validaciones G0, cambios simultáneos en criterios/matriz/pruebas                                                 | cada cambio           | Orquestador                |
 | R-017 | Ambigüedad de rol produce sobreexposición                | B/A | **decisión resuelta e implementada**: DEC-0103, 136 políticas, matriz 2561/2561 y R6 independiente sin hallazgos               | G2                    | Usuario + Seguridad        |
 | R-018 | Cambio de tipo contradice conservación de APT/SIRI       | M/A | **decisión resuelta**: historia inmutable con actor/UTC/anterior; inactivar monitoreo/campos y probar en F2/F5/F9              | F2/F5/F9              | Arquitectura/Calidad       |
@@ -33,11 +33,10 @@ Estado: **Fase 3 activa; G3 pendiente**. Escala: probabilidad/impacto `B` baja, 
 | R-027 | Aprobación ejecuta una mutación distinta o se reutiliza  | B/A | fotografía/payload canónicos, decisión vigente, ejecución `running` bloqueada y consumo atómico; negativos DB                  | G2/G4                 | Aprobaciones/Datos/Calidad |
 | R-028 | Identidad real difiere del simulador F3                  | M/A | ambiente Entra/Supabase autorizado; tenant fijo, allowlist, MFA/AAL2, revocación y auditoría antes de G3                       | G3                    | Usuario/Seguridad          |
 | R-029 | Bundle crece antes de dividir rutas                      | M/M | medir y aplicar carga diferida por ruta antes de ampliar módulos; presupuesto final en F12                                     | F3–F4/F12             | Front-end/Calidad          |
-| R-030 | Pruebas separadas producen falso GO del flujo vertical   | A/A | E2E único contra Supabase/PostgREST/PostgreSQL con RLS/auditoría observable antes de G3; no equiparar MSW + SQL separado       | G3                    | Integración/Calidad        |
+| R-030 | Pruebas separadas producen falso GO del flujo vertical   | B/A | **mitigado 2026-07-24** con E2E único UI→PostgREST 14.12→PostgreSQL 17, RLS y auditoría; falta revisión independiente          | G3                    | Integración/Calidad        |
 
 ## Riesgos aceptados solo temporalmente
 
-- GitHub Actions, repositorio y rama fueron aprobados en `DEC-0209`; la carpeta aún debe inicializarse, publicarse y proteger `Main` con autenticación del propietario antes de G3.
 - No hay credenciales Entra ni entorno remoto autorizado. La integración queda deshabilitada por defecto; tenant/MFA/allowlist/revocación reales siguen pendientes para G3.
 - `psql` no está instalado en el host, pero Docker Desktop permitió ejecutar PostgreSQL 17.10 de forma aislada. Las 20 migraciones, estructura, matriz RLS 2561/2561 y el walking skeleton F3 pasaron.
 - El chunk principal ronda 799 kB sin comprimir; se acepta temporalmente para el corte mínimo y se divide antes de ampliar módulos.

@@ -17,6 +17,7 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "verify:architecture": "node scripts/verify-architecture.mjs && pnpm --filter @jbc/contracts verify",
     "verify:ci": "pnpm verify && pnpm build:storybook && pnpm test:e2e --workers=1 --reporter=line && pnpm --filter @jbc/web test:pwa",
+    "verify:connected": "node scripts/verify-connected.mjs",
     "verify:database": "node scripts/verify-database.mjs",
     "verify:secrets": "node scripts/verify-secrets.mjs",
     "verify:sql": "node scripts/verify-sql-static.mjs",

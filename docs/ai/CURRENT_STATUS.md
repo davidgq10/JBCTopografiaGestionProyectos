@@ -30,11 +30,13 @@ Fuentes: [informe F3](PHASE_3_REPORT.md) y [evidencia F03](../testing/evidence/F
 
 ## Bloqueos de G3
 
-1. `F3-REV-P1-02`: falta un único recorrido de navegador conectado a Supabase/PostgREST/PostgreSQL que demuestre lectura, escritura, RLS, auditoría y respuesta visible; hoy UI y DB pasan por separado.
-2. `DEC-0209` fue aprobada para GitHub Actions, repositorio `davidgq10/JBCTopografia_GestionProyectos.git` y rama `Main`; falta publicar la configuración y aplicar la protección remota con una credencial administrativa.
-3. Microsoft Entra/Supabase Auth real: falta ambiente autorizado para comprobar tenant, MFA, allowlist y revocación; los simuladores no se presentan como evidencia real.
-4. R3 independiente emitió **NO-GO: 0 P0, 1 P1, 1 P2, 0 P3**. El P2 restante corresponde a teclado/zoom/navegadores y dispositivos adicionales; el P1 es el recorrido conectado.
-5. Aprobación expresa del usuario: requerida aun después de cerrar los puntos anteriores.
+1. Microsoft Entra/Supabase Auth real: falta ambiente autorizado para comprobar tenant, MFA, allowlist y revocación; el JWT sintético del arés conectado no se presenta como evidencia Entra.
+2. R3 independiente emitió **NO-GO: 0 P0, 1 P1, 1 P2, 0 P3**. `F3-REV-P1-02` tiene corrección y evidencia conectada nuevas, pero requiere dictamen independiente actualizado. El P2 de teclado/zoom/navegadores y dispositivos adicionales sigue abierto.
+3. Aprobación expresa del usuario: requerida aun después de cerrar los puntos anteriores.
+
+`DEC-0209` ya no es un bloqueo: GitHub Actions fue publicado en `davidgq10/JBCTopografiaGestionProyectos`, `Main` es predeterminada y está protegida, y la primera ejecución alojada pasó `Quality` y `Database`.
+
+El recorrido conectado local pasó el 2026-07-24 con PostgREST 14.12 y PostgreSQL 17: lectura RLS, escritura con versión, respuesta visible y auditoría transaccional. Evidencia: `F03/F03-CONNECTED-POSTGREST-2026-07-24.md`.
 
 ## Riesgo no bloqueante
 
