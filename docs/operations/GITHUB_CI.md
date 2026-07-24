@@ -34,8 +34,7 @@ El gráfico de dependencias está habilitado para que `actions/dependency-review
 - descartar aprobaciones cuando cambie el código;
 - resolver todas las conversaciones;
 - exigir rama actualizada antes de integrar;
-- checks requeridos desde la publicación: `Quality` y `Database`;
-- `Connected integration` y `Dependency review` se agregan como checks requeridos en cuanto GitHub los registre durante el primer pull request;
+- checks requeridos: `Quality`, `Database`, `Connected integration` y `Dependency review`;
 - impedir force-push y eliminación de `Main`;
 - aplicar las reglas también a administradores;
 - historial lineal y sin bypass ordinario.
