@@ -1,0 +1,142 @@
+\set ON_ERROR_STOP on
+\pset pager off
+
+begin;
+\ir 00_surface_manifest.sql
+
+insert into rls_test_subjects
+  (auth_subject, app_user_id, app_role, identity_state)
+values (
+  '81000000-0000-4000-8000-000000000001',
+  '81000000-0000-4000-8000-000000000002',
+  'technician', 'active'
+);
+
+do $role_label_mutant$
+begin
+  begin
+    insert into rls_test_cases (
+      case_id, surface_name, operation, app_role, auth_subject,
+      scope_variant, ownership_case, scope_case, target_id, target_project_id,
+      command_sql, expected_access, expected_kind, expected_rows, expected_ids
+    ) values (
+      'mutant-role-label', 'projects', 'SELECT', 'administrator',
+      '81000000-0000-4000-8000-000000000001', 'project', 'not_applicable', 'assigned_project',
+      '82000000-0000-4000-8000-000000000001',
+      '82000000-0000-4000-8000-000000000001',
+      'select id from public.projects where id = ''82000000-0000-4000-8000-000000000001''',
+      false, 'row_count', 0, array[]::uuid[]
+    );
+  exception when foreign_key_violation then
+    raise notice 'PASS [mutante rol]: auth_subject technician no puede etiquetarse administrator';
+    return;
+  end;
+  raise exception 'FAIL [mutante rol]: la etiqueta falsa fue aceptada';
+end;
+$role_label_mutant$;
+
+insert into rls_test_cases (
+  case_id, surface_name, operation, app_role, auth_subject,
+  scope_variant, ownership_case, scope_case, target_id, target_project_id,
+  command_sql, expected_access, expected_kind, expected_rows, expected_ids
+) values (
+  'mutant-missing-target', 'projects', 'SELECT', 'technician',
+  '81000000-0000-4000-8000-000000000001', 'project', 'not_applicable', 'unassigned',
+  '82000000-0000-4000-8000-000000000002',
+  '82000000-0000-4000-8000-000000000002',
+  'select id from public.projects where id = ''82000000-0000-4000-8000-000000000002''',
+  false, 'row_count', 0, array[]::uuid[]
+);
+
+do $missing_target_mutant$
+begin
+  if pg_temp.rls_target_exists(
+    'projects', '82000000-0000-4000-8000-000000000002'
+  ) then
+    raise exception 'FAIL [mutante objetivo]: el UUID reservado ya existe';
+  end if;
+  if not exists (
+    select 1 from rls_test_cases c
+    where c.case_id = 'mutant-missing-target'
+      and c.operation <> 'INSERT'
+      and not pg_temp.rls_target_exists(c.surface_name, c.target_id)
+  ) then
+    raise exception 'FAIL [mutante objetivo]: el guard no detectó la fila inexistente';
+  end if;
+  raise notice 'PASS [mutante objetivo]: SELECT a UUID inexistente es rechazado por el guard';
+end;
+$missing_target_mutant$;
+
+do $sibling_label_mutant$
+begin
+  begin
+    insert into rls_test_cases (
+      case_id, surface_name, operation, app_role, auth_subject,
+      scope_variant, ownership_case, scope_case, target_id, target_project_id,
+      command_sql, expected_access, expected_kind, expected_rows, expected_ids
+    ) values (
+      'mutant-sibling-label', 'projects', 'SELECT', 'technician',
+      '81000000-0000-4000-8000-000000000001', 'project', 'not_applicable',
+      'sibling_work', '82000000-0000-4000-8000-000000000003',
+      '82000000-0000-4000-8000-000000000003',
+      'select id from public.projects where id = ''82000000-0000-4000-8000-000000000003''',
+      false, 'row_count', 0, array[]::uuid[]
+    );
+  exception when check_violation then
+    raise notice 'PASS [mutante hermano]: sibling_work no puede etiquetar alcance project';
+    return;
+  end;
+  raise exception 'FAIL [mutante hermano]: la etiqueta discordante fue aceptada';
+end;
+$sibling_label_mutant$;
+
+do $free_postcondition_mutant$
+begin
+  if exists (
+    select 1 from pg_attribute
+    where attrelid = 'pg_temp.rls_test_cases'::regclass
+      and attname in ('postcondition_sql', 'expected_postcondition')
+      and attnum > 0 and not attisdropped
+  ) then
+    raise exception 'FAIL [mutante postcondición]: el SQL libre sigue disponible';
+  end if;
+  raise notice 'PASS [mutante postcondición]: la postcondición se deriva de superficie+UUID';
+end;
+$free_postcondition_mutant$;
+
+insert into rls_test_cases (
+  case_id, surface_name, operation, app_role, auth_subject,
+  scope_variant, ownership_case, scope_case, target_id,
+  command_sql, expected_access, expected_kind, expected_rows, expected_ids
+)
+select
+  'mutant-contradictory-predicate', 'work_types', 'SELECT', 'technician',
+  '81000000-0000-4000-8000-000000000001',
+  'organization', 'not_applicable', 'global', wt.id,
+  format('select id from public.work_types where id = ''%s'' and 1=0', wt.id),
+  false, 'row_count', 0, array[]::uuid[]
+from public.work_types wt
+where wt.code = 'croquis';
+
+do $contradictory_predicate_mutant$
+declare
+  mutant rls_test_cases%rowtype;
+begin
+  select * into strict mutant
+  from rls_test_cases
+  where case_id = 'mutant-contradictory-predicate';
+
+  if pg_temp.rls_command_is_canonical(
+    mutant.surface_name, mutant.operation, mutant.target_id, mutant.command_sql
+  ) then
+    raise exception 'FAIL [mutante predicado]: AND 1=0 fue aceptado como comando canónico';
+  end if;
+  if not pg_temp.rls_target_exists(mutant.surface_name, mutant.target_id) then
+    raise exception 'FAIL [mutante predicado]: el objetivo físico debe existir';
+  end if;
+  raise notice 'PASS [mutante predicado]: el objetivo real con AND 1=0 es rechazado';
+end;
+$contradictory_predicate_mutant$;
+
+select 'RLS-HARNESS-GUARDS PASS' as result;
+rollback;

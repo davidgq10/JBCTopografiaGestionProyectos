@@ -1,0 +1,16 @@
+\set ON_ERROR_STOP on
+begin;
+insert into public.management_notes
+  (id, project_id, work_id, management_id, logical_note_id, revision, body,
+   supersedes_note_id, created_by)
+values (
+  '7d000000-0000-4000-8000-00000000000c',
+  '7d000000-0000-4000-8000-000000000006',
+  '7d000000-0000-4000-8000-000000000007',
+  '7d000000-0000-4000-8000-000000000008',
+  '7d000000-0000-4000-8000-00000000000a',
+  2, 'Revisión competidora B',
+  '7d000000-0000-4000-8000-000000000009',
+  '7d000000-0000-4000-8000-000000000001'
+);
+commit;

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" id="theme-color" content="#f4f5f6" />
+    <title>JBC Proyectos — Prototipo UX</title>
+    <meta
+      name="description"
+      content="Prototipo local de arquitectura de información para la plataforma de proyectos de JBC Topografía."
+    />
+    <script>
+      (function () {
+        var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.themePreference = "system";
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      })();
+    </script>
+    <link rel="stylesheet" href="./styles.css?v=20260723-sidebar-settings-2" />
+  </head>
+  <body>
+    <a class="skip-link" href="#app-main">Saltar al contenido principal</a>
+
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navegación principal">
+        <div class="sidebar-header">
+          <a class="brand" href="#inicio" aria-label="JBC Proyectos, inicio">
+            <span class="brand-mark" aria-hidden="true">J</span>
+            <strong>JBC Proyectos</strong>
+          </a>
+
+          <button
+            class="sidebar-toggle"
+            id="sidebar-toggle"
+            type="button"
+            aria-expanded="true"
+            aria-controls="primary-navigation"
+            aria-label="Mostrar solo iconos del menú principal"
+            title="Mostrar solo iconos del menú principal"
+          >
+            <span class="sidebar-toggle-brand" aria-hidden="true">J</span>
+            <span class="sidebar-toggle-close" aria-hidden="true">×</span>
+          </button>
+        </div>
+
+        <nav class="side-nav" id="primary-navigation">
+          <p class="nav-label">Trabajo</p>
+          <a href="#inicio" data-nav="inicio" title="Inicio"><span aria-hidden="true">⌂</span>Inicio</a>
+          <a href="#proyectos" data-nav="proyectos" title="Proyectos"><span aria-hidden="true">▦</span>Proyectos</a>
+          <a href="#trabajo" data-nav="trabajo" title="Gestiones y tareas"><span aria-hidden="true">✓</span>Gestiones y tareas</a>
+          <a href="#agenda" data-nav="agenda" title="Agenda"><span aria-hidden="true">◷</span>Agenda</a>
+
+          <p class="nav-label">Operación</p>
+          <a href="#archivos" data-nav="archivos" title="OneDrive"><span aria-hidden="true">□</span>OneDrive</a>
+          <a href="#aprobaciones" data-nav="aprobaciones" title="Aprobaciones"><span aria-hidden="true">◎</span>Aprobaciones</a>
+          <a href="#notificaciones" data-nav="notificaciones" title="Notificaciones"><span aria-hidden="true">◇</span>Notificaciones</a>
+          <a href="#reportes" data-nav="reportes" title="Reportes"><span aria-hidden="true">▥</span>Reportes</a>
+
+        </nav>
+
+        <a class="sidebar-settings" href="#administracion" data-nav="administracion" aria-label="Configuración" title="Configuración">
+          <span aria-hidden="true">⚙</span>
+          <span class="sidebar-settings-label">Configuración</span>
+        </a>
+      </aside>
+
+      <div class="workspace">
+        <header class="topbar">
+          <a class="mobile-brand" href="#inicio" aria-label="JBC Proyectos, inicio">
+            <span class="brand-mark" aria-hidden="true">J</span>
+            <strong>JBC</strong>
+          </a>
+
+          <form class="global-search" id="global-search" role="search">
+            <label class="sr-only" for="search-input">Buscar proyectos, clientes o planos</label>
+            <span aria-hidden="true">⌕</span>
+            <input
+              id="search-input"
+              name="q"
+              type="search"
+              placeholder="Buscar proyecto, cliente, plano…"
+              autocomplete="off"
+            />
+            <kbd aria-hidden="true">Ctrl K</kbd>
+          </form>
+
+          <div class="top-actions">
+            <label class="state-picker" for="view-state">
+              <span>Estado</span>
+              <select id="view-state">
+                <option value="normal">Normal</option>
+                <option value="loading">Cargando</option>
+                <option value="empty">Vacío</option>
+                <option value="error">Error</option>
+                <option value="permissions">Sin permiso</option>
+                <option value="degraded">Degradado</option>
+                <option value="stale">Datos antiguos</option>
+                <option value="offline">Sin conexión</option>
+                <option value="success">Éxito</option>
+                <option value="conflict">Conflicto</option>
+              </select>
+            </label>
+            <a class="icon-link" href="#notificaciones" aria-label="Notificaciones, 3 pendientes">
+              <span aria-hidden="true">◇</span>
+              <span class="notification-count">3</span>
+            </a>
+            <button class="profile-button" id="profile-button" type="button" aria-expanded="false" aria-label="Abrir preferencias de usuario">
+              <span class="avatar" aria-hidden="true">LM</span>
+              <span class="profile-copy">
+                <strong>Laura Mora</strong>
+                <small>Coordinadora</small>
+              </span>
+              <span aria-hidden="true">⌄</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="context-banner" id="context-banner" hidden>
+          <span id="context-banner-icon" aria-hidden="true">i</span>
+          <p id="context-banner-copy"></p>
+          <button type="button" class="icon-button" id="dismiss-banner" aria-label="Cerrar aviso" title="Cerrar aviso">×</button>
+        </div>
+
+        <main id="app-main" tabindex="-1"></main>
+      </div>
+    </div>
+
+    <nav class="bottom-nav" aria-label="Navegación móvil">
+      <a href="#inicio" data-nav="inicio"><span aria-hidden="true">⌂</span><small>Inicio</small></a>
+      <a href="#proyectos" data-nav="proyectos"><span aria-hidden="true">▦</span><small>Proyectos</small></a>
+      <a href="#trabajo" data-nav="trabajo"><span aria-hidden="true">✓</span><small>Trabajo</small></a>
+      <a href="#agenda" data-nav="agenda"><span aria-hidden="true">◷</span><small>Agenda</small></a>
+      <button type="button" id="more-button" aria-expanded="false" aria-controls="more-sheet">
+        <span aria-hidden="true">•••</span><small>Más</small>
+      </button>
+    </nav>
+
+    <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+    <aside class="more-sheet" id="more-sheet" aria-label="Más opciones" aria-hidden="true">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-header">
+        <div>
+          <strong>Más opciones</strong>
+          <small>Operación y configuración</small>
+        </div>
+        <button type="button" class="icon-button" id="close-sheet" aria-label="Cerrar menú" title="Cerrar menú">×</button>
+      </div>
+      <nav>
+        <a href="#archivos">OneDrive</a>
+        <a href="#aprobaciones">Aprobaciones <span class="count-pill">4</span></a>
+        <a href="#notificaciones">Notificaciones <span class="count-pill">3</span></a>
+        <a href="#reportes">Reportes</a>
+        <a href="#administracion">Administración</a>
+        <a href="#estados">Estados de interfaz</a>
+      </nav>
+    </aside>
+
+    <div class="profile-popover" id="profile-popover" hidden>
+      <strong>Apariencia</strong>
+      <p>Fondos neutros; el acento se reserva para controles, foco y énfasis.</p>
+      <div class="theme-options" role="group" aria-label="Tema de interfaz">
+        <button type="button" data-theme-choice="system" aria-pressed="true">Automático</button>
+        <button type="button" data-theme-choice="light" aria-pressed="false">Claro</button>
+        <button type="button" data-theme-choice="dark" aria-pressed="false">Oscuro</button>
+      </div>
+      <hr class="preference-divider" />
+      <strong>Color de acento</strong>
+      <p>Los colores semánticos de alertas no cambian.</p>
+      <div class="accent-options" role="group" aria-label="Color de acento">
+        <button type="button" data-accent="#0f766e" aria-label="Teal institucional" aria-pressed="true" class="is-selected"></button>
+        <button type="button" data-accent="#1d4ed8" aria-label="Azul" aria-pressed="false"></button>
+        <button type="button" data-accent="#4338ca" aria-label="Índigo" aria-pressed="false"></button>
+        <button type="button" data-accent="#6d28d9" aria-label="Violeta" aria-pressed="false"></button>
+        <button type="button" data-accent="#a21caf" aria-label="Rosa" aria-pressed="false"></button>
+        <button type="button" data-accent="#9a3412" aria-label="Naranja" aria-pressed="false"></button>
+      </div>
+      <a href="#administracion">Abrir preferencias</a>
+    </div>
+
+    <button
+      class="assistant-launcher"
+      id="assistant-launcher"
+      type="button"
+      aria-expanded="false"
+      aria-controls="ai-assistant"
+      aria-keyshortcuts="Alt+I"
+      aria-label="Abrir asistente IA"
+    >
+      <span aria-hidden="true">✦</span><span>Asistente IA</span>
+    </button>
+
+    <aside
+      class="assistant-panel"
+      id="ai-assistant"
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="assistant-title"
+      aria-hidden="true"
+      inert
+    >
+      <header class="assistant-header">
+        <div><span class="status-badge ai">IA</span><h2 id="assistant-title">Asistente contextual</h2></div>
+        <button class="icon-button" id="assistant-close" type="button" aria-label="Cerrar asistente" title="Cerrar asistente">×</button>
+      </header>
+      <div class="assistant-context"><span>Contexto activo</span><strong id="assistant-context">Vista general</strong></div>
+      <form class="assistant-composer" id="assistant-form">
+        <label class="sr-only" for="assistant-input">Mensaje o comando para el asistente</label>
+        <textarea id="assistant-input" rows="2" placeholder="Escriba / para ver comandos…"></textarea>
+        <div><span>La IA propone; una persona confirma.</span><button class="button primary" type="submit">Enviar</button></div>
+      </form>
+      <div class="assistant-command-menu" id="assistant-command-menu" hidden>
+        <p>Comandos disponibles</p>
+        <button type="button" data-ai-command="/tarea"><strong>/tarea</strong><span>Preparar una tarea</span></button>
+        <button type="button" data-ai-command="/comentario"><strong>/comentario</strong><span>Redactar un comentario</span></button>
+        <button type="button" data-ai-command="/agenda"><strong>/agenda</strong><span>Proponer un bloque de agenda</span></button>
+        <button type="button" data-ai-command="/gestion"><strong>/gestion</strong><span>Registrar una gestión</span></button>
+        <button type="button" data-ai-command="/resumen"><strong>/resumen</strong><span>Resumir el contexto autorizado</span></button>
+        <button type="button" data-ai-command="/buscar"><strong>/buscar</strong><span>Buscar sin salir del contexto</span></button>
+      </div>
+      <div class="assistant-messages" id="assistant-messages" aria-live="polite">
+        <article class="assistant-message is-ai">
+          <strong>¿Qué desea gestionar?</strong>
+          <p>Escriba <kbd>/</kbd> para crear una tarea, comentario, bloque de agenda o gestión desde el contexto actual.</p>
+        </article>
+      </div>
+    </aside>
+
+    <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <div class="noscript">Este prototipo necesita JavaScript para cambiar entre vistas ficticias.</div>
+    </noscript>
+    <script src="./app.js?v=20260723-sidebar-settings-2" defer></script>
+  </body>
+</html>

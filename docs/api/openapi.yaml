@@ -1,0 +1,559 @@
+openapi: 3.1.0
+info:
+  title: Contratos de aplicación JBC Proyectos
+  version: 1.0.0
+  license:
+    name: Uso interno de JBC Topografía
+    identifier: LicenseRef-JBC-Internal
+  description: >-
+    Contrato mínimo y versionado de Fase 2. No es una API desplegada ni autoriza
+    accesos. El servidor deriva el actor, evalúa alcance y revalida cada comando.
+servers:
+  - url: https://api.invalid.example/v1
+    description: Marcador no desplegable; el servidor real se define en Fase 3.
+security:
+  - bearerAuth: []
+tags:
+  - name: Trabajos
+    description: Consultas y comandos contractuales que conservan Contratación y Trabajo.
+  - name: Aprobaciones
+    description: Solicitudes y decisiones separadas de la ejecución del cambio autorizado.
+paths:
+  /projects/{projectId}/works/{workId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/WorkId'
+      - $ref: '#/components/parameters/CorrelationId'
+    get:
+      operationId: getWorkContextV1
+      tags: [Trabajos]
+      summary: Consultar un Trabajo dentro de su Contratación
+      responses:
+        '200':
+          description: Contexto autorizado; los estados de otros Trabajos no se fusionan.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkContextResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /projects/{projectId}/works/{workId}/type-change-requests:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/WorkId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+    post:
+      operationId: requestWorkTypeChangeV1
+      tags: [Trabajos, Aprobaciones]
+      summary: Solicitar el cambio de tipo de un Trabajo
+      description: >-
+        Solo crea una solicitud. Una persona autorizada decide y el módulo propietario
+        vuelve a validar la versión antes de ejecutar. Nunca activa APT/SIRI fuera de
+        Plano de catastro ni elimina su historia.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeWorkTypeCommandBody'
+      responses:
+        '202':
+          description: Solicitud pendiente de aprobación.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeWorkTypeAccepted'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /projects/{projectId}/approval-requests:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+    post:
+      operationId: requestProjectApprovalV1
+      tags: [Aprobaciones]
+      summary: Registrar una solicitud de aprobación para una Contratación
+      description: El servidor construye un alcance project; no se inventa un Trabajo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestApprovalCommandBody'
+      responses:
+        '201':
+          description: Solicitud de Proyecto registrada; no implica ejecución.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /projects/{projectId}/approval-requests/{approvalRequestId}/decisions:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/ApprovalRequestId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+    post:
+      operationId: resolveProjectApprovalV1
+      tags: [Aprobaciones]
+      summary: Aprobar o rechazar una solicitud de Contratación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveApprovalCommandBody'
+      responses:
+        '200':
+          description: Decisión registrada; la ejecución ocurre por separado y se revalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /projects/{projectId}/works/{workId}/approval-requests:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/WorkId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+    post:
+      operationId: requestApprovalV1
+      tags: [Aprobaciones]
+      summary: Registrar una solicitud de aprobación contextual
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestApprovalCommandBody'
+      responses:
+        '201':
+          description: Solicitud registrada; no implica ejecución.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /projects/{projectId}/works/{workId}/approval-requests/{approvalRequestId}/decisions:
+    parameters:
+      - $ref: '#/components/parameters/ProjectId'
+      - $ref: '#/components/parameters/WorkId'
+      - $ref: '#/components/parameters/ApprovalRequestId'
+      - $ref: '#/components/parameters/CorrelationId'
+      - $ref: '#/components/parameters/IdempotencyKey'
+    post:
+      operationId: resolveApprovalV1
+      tags: [Aprobaciones]
+      summary: Aprobar o rechazar sin ejecutar el cambio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveApprovalCommandBody'
+      responses:
+        '200':
+          description: Decisión registrada; la ejecución ocurre por separado y se revalida.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApprovalRequest'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token validado en backend. Nunca representa service_role en el navegador.
+  parameters:
+    ProjectId:
+      name: projectId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    WorkId:
+      name: workId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ApprovalRequestId:
+      name: approvalRequestId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    CorrelationId:
+      name: X-Correlation-Id
+      in: header
+      required: true
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 8, maxLength: 128 }
+  responses:
+    ValidationError:
+      description: Los datos no son válidos. Revise los campos indicados.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    Unauthenticated:
+      description: La sesión no es válida o expiró.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    Forbidden:
+      description: No tiene permiso para realizar esta acción en este Proyecto y Trabajo.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    NotFound:
+      description: No se encontró el registro dentro del alcance autorizado.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    Conflict:
+      description: El registro cambió o la clave de reintento corresponde a otra solicitud.
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+  schemas:
+    ContractVersion:
+      type: integer
+      const: 1
+    UtcInstant:
+      type: string
+      format: date-time
+      pattern: 'Z$'
+      examples: ['2026-07-23T18:30:00.000Z']
+    WorkContext:
+      type: object
+      additionalProperties: false
+      required: [projectId, workId]
+      properties:
+        projectId: { type: string, format: uuid }
+        workId: { type: string, format: uuid }
+    ResourceScope:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [scopeKind]
+          properties:
+            scopeKind: { type: string, const: organization }
+        - type: object
+          additionalProperties: false
+          required: [scopeKind, projectId]
+          properties:
+            scopeKind: { type: string, const: project }
+            projectId: { type: string, format: uuid }
+        - type: object
+          additionalProperties: false
+          required: [scopeKind, projectId, workId]
+          properties:
+            scopeKind: { type: string, const: work }
+            projectId: { type: string, format: uuid }
+            workId: { type: string, format: uuid }
+      discriminator:
+        propertyName: scopeKind
+    WorkType:
+      type: string
+      enum: [delimitacion, curvas_nivel, avaluo, croquis, plano_catastro]
+    InternalWorkStatus:
+      type: string
+      pattern: '^[a-z][a-z0-9_]{0,79}$'
+      description: Código opaco de work_state_definitions, fijado por la versión de configuración.
+    WorkSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - contractVersion
+        - projectId
+        - workId
+        - clientId
+        - projectCode
+        - name
+        - type
+        - internalStatus
+        - version
+        - createdAtUtc
+        - updatedAtUtc
+        - archivedAtUtc
+        - archiveReason
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        projectId: { type: string, format: uuid }
+        workId: { type: string, format: uuid }
+        clientId: { type: string, format: uuid }
+        projectCode: { type: string, minLength: 1, maxLength: 64 }
+        name: { type: string, minLength: 1, maxLength: 240 }
+        type: { $ref: '#/components/schemas/WorkType' }
+        internalStatus: { $ref: '#/components/schemas/InternalWorkStatus' }
+        version: { type: integer, minimum: 1 }
+        createdAtUtc: { $ref: '#/components/schemas/UtcInstant' }
+        updatedAtUtc: { $ref: '#/components/schemas/UtcInstant' }
+        archivedAtUtc:
+          oneOf:
+            - { $ref: '#/components/schemas/UtcInstant' }
+            - { type: 'null' }
+        archiveReason:
+          oneOf:
+            - { type: string, minLength: 1, maxLength: 1000 }
+            - { type: 'null' }
+    ExternalProcedureSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        - contractVersion
+        - projectId
+        - workId
+        - procedureId
+        - source
+        - originalText
+        - normalizedStatus
+        - observedAtUtc
+        - lastSuccessfulQueryAtUtc
+        - active
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        projectId: { type: string, format: uuid }
+        workId: { type: string, format: uuid }
+        procedureId: { type: string, format: uuid }
+        source: { type: string, enum: [apt, siri] }
+        originalText: { type: string, maxLength: 100000 }
+        normalizedStatus:
+          type: string
+          enum:
+            - unqueried
+            - not_found
+            - in_progress
+            - attention_required
+            - resolved_favorable
+            - resolved_unfavorable
+            - completed
+            - query_error
+            - unclassified
+        observedAtUtc: { $ref: '#/components/schemas/UtcInstant' }
+        lastSuccessfulQueryAtUtc:
+          oneOf:
+            - { $ref: '#/components/schemas/UtcInstant' }
+            - { type: 'null' }
+        active: { type: boolean }
+    DocumentReference:
+      type: object
+      additionalProperties: false
+      description: Solo metadatos e identificadores OneDrive; nunca contenido binario.
+      required:
+        - contractVersion
+        - projectId
+        - workId
+        - documentId
+        - driveId
+        - driveItemId
+        - name
+        - mediaType
+        - sizeBytes
+        - versionTag
+        - archivedAtUtc
+        - previousPath
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        projectId: { type: string, format: uuid }
+        workId: { type: string, format: uuid }
+        documentId: { type: string, format: uuid }
+        driveId: { type: string, minLength: 1, maxLength: 512 }
+        driveItemId: { type: string, minLength: 1, maxLength: 512 }
+        name: { type: string, minLength: 1, maxLength: 500 }
+        mediaType: { type: [string, 'null'], maxLength: 255 }
+        sizeBytes: { type: [integer, 'null'], minimum: 0 }
+        versionTag: { type: string, minLength: 1, maxLength: 512 }
+        archivedAtUtc:
+          oneOf:
+            - { $ref: '#/components/schemas/UtcInstant' }
+            - { type: 'null' }
+        previousPath: { type: [string, 'null'], maxLength: 4000 }
+    WorkContextResponse:
+      type: object
+      additionalProperties: false
+      required: [contractVersion, context, work, externalProcedures, documents, correlationId]
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        context: { $ref: '#/components/schemas/WorkContext' }
+        work: { $ref: '#/components/schemas/WorkSummary' }
+        externalProcedures:
+          type: array
+          items: { $ref: '#/components/schemas/ExternalProcedureSnapshot' }
+        documents:
+          type: array
+          items: { $ref: '#/components/schemas/DocumentReference' }
+        correlationId: { type: string, format: uuid }
+    ChangeWorkTypeCommandBody:
+      type: object
+      additionalProperties: false
+      required: [contractVersion, expectedVersion, newType, reason, comparisonSummary]
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        expectedVersion: { type: integer, minimum: 1 }
+        newType: { $ref: '#/components/schemas/WorkType' }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        comparisonSummary: { type: string, minLength: 1, maxLength: 4000 }
+    ChangeWorkTypeAccepted:
+      type: object
+      additionalProperties: false
+      required: [contractVersion, projectId, workId, approvalRequestId, status, correlationId]
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        projectId: { type: string, format: uuid }
+        workId: { type: string, format: uuid }
+        approvalRequestId: { type: string, format: uuid }
+        status: { type: string, const: pending_approval }
+        correlationId: { type: string, format: uuid }
+    ApprovalTarget:
+      type: object
+      additionalProperties: false
+      required: [scope, entityType, entityId, entityVersion]
+      properties:
+        scope: { $ref: '#/components/schemas/ResourceScope' }
+        entityType: { type: string, minLength: 1, maxLength: 80 }
+        entityId: { type: string, format: uuid }
+        entityVersion: { type: integer, minimum: 1 }
+    RequestApprovalCommandBody:
+      type: object
+      additionalProperties: false
+      required: [contractVersion, action, reason, impactSummary, target]
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        action: { type: string, minLength: 1, maxLength: 120 }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        impactSummary: { type: string, minLength: 1, maxLength: 4000 }
+        target: { $ref: '#/components/schemas/ApprovalTarget' }
+    ResolveApprovalCommandBody:
+      type: object
+      additionalProperties: false
+      required: [contractVersion, expectedTargetVersion, decision, comment]
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        expectedTargetVersion: { type: integer, minimum: 1 }
+        decision: { type: string, enum: [approve, reject] }
+        comment: { type: string, minLength: 1, maxLength: 2000 }
+    ApprovalRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - contractVersion
+        - approvalRequestId
+        - scope
+        - status
+        - action
+        - reason
+        - target
+        - requestedByActorId
+        - requestedAtUtc
+        - decidedByActorId
+        - decidedAtUtc
+        - correlationId
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        approvalRequestId: { type: string, format: uuid }
+        scope: { $ref: '#/components/schemas/ResourceScope' }
+        status:
+          type: string
+          enum:
+            [
+              draft,
+              pending,
+              approved,
+              rejected,
+              expired,
+              cancelled,
+              executing,
+              executed,
+              failed,
+              superseded,
+            ]
+        action: { type: string, minLength: 1, maxLength: 120 }
+        reason: { type: string, minLength: 1, maxLength: 1000 }
+        target: { $ref: '#/components/schemas/ApprovalTarget' }
+        requestedByActorId: { type: string, format: uuid }
+        requestedAtUtc: { $ref: '#/components/schemas/UtcInstant' }
+        decidedByActorId: { type: [string, 'null'], format: uuid }
+        decidedAtUtc:
+          oneOf:
+            - { $ref: '#/components/schemas/UtcInstant' }
+            - { type: 'null' }
+        correlationId: { type: string, format: uuid }
+    FieldViolation:
+      type: object
+      additionalProperties: false
+      required: [path, message]
+      properties:
+        path: { type: string, minLength: 1, maxLength: 256 }
+        message: { type: string, minLength: 1, maxLength: 500 }
+    ApiError:
+      type: object
+      additionalProperties: false
+      required: [contractVersion, code, message, correlationId, retryable]
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        code:
+          type: string
+          enum:
+            - VALIDATION_ERROR
+            - UNAUTHENTICATED
+            - FORBIDDEN
+            - NOT_FOUND
+            - CONFLICT
+            - STALE_VERSION
+            - IDEMPOTENCY_CONFLICT
+            - APPROVAL_REQUIRED
+            - EXTERNAL_DEPENDENCY_UNAVAILABLE
+            - INTERNAL_ERROR
+        message: { type: string, minLength: 1, maxLength: 500 }
+        correlationId: { type: string, format: uuid }
+        violations:
+          type: array
+          maxItems: 50
+          items: { $ref: '#/components/schemas/FieldViolation' }
+        retryable: { type: boolean, default: false }

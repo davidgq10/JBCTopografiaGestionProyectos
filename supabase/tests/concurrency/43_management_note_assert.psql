@@ -1,0 +1,22 @@
+\set ON_ERROR_STOP on
+\pset pager off
+
+do $assert_note_race$
+begin
+  if (select count(*)
+      from public.management_notes
+      where management_id = '7d000000-0000-4000-8000-000000000008'
+        and logical_note_id = '7d000000-0000-4000-8000-00000000000a'
+        and revision = 2) <> 1 then
+    raise exception 'FAIL [concurrencia de notas]: no quedó exactamente una revisión 2';
+  end if;
+  raise notice 'PASS [concurrencia de notas]: una sesión confirma y la otra viola unicidad';
+end;
+$assert_note_race$;
+
+select 'F2-NOTE-RACE PASS' as result,
+       count(*) filter (where revision = 1) as revision_1,
+       count(*) filter (where revision = 2) as revision_2
+from public.management_notes
+where management_id = '7d000000-0000-4000-8000-000000000008'
+  and logical_note_id = '7d000000-0000-4000-8000-00000000000a';

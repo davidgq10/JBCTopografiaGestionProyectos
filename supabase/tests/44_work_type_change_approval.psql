@@ -1,0 +1,269 @@
+\set ON_ERROR_STOP on
+\pset pager off
+
+begin;
+
+create or replace function pg_temp.expect_sqlstate(
+  p_label text,
+  p_sql text,
+  p_expected_state text
+)
+returns void
+language plpgsql
+as $expect$
+declare
+  actual_state text;
+  actual_message text;
+begin
+  begin
+    execute p_sql;
+  exception when others then
+    get stacked diagnostics actual_state = returned_sqlstate, actual_message = message_text;
+    if actual_state = p_expected_state then
+      raise notice 'PASS [%]: SQLSTATE % (%)', p_label, actual_state, actual_message;
+      return;
+    end if;
+    raise exception 'FAIL [%]: esperaba %, obtuvo % (%)',
+      p_label, p_expected_state, actual_state, actual_message;
+  end;
+  raise exception 'FAIL [%]: la operación fue aceptada', p_label;
+end;
+$expect$;
+
+insert into public.app_users (id, auth_subject, display_name, email)
+values
+  ('7f000000-0000-4000-8000-000000000001','7f000000-0000-4000-8000-000000000101','Actor cambio','fase2-change-actor@example.invalid'),
+  ('7f000000-0000-4000-8000-000000000002','7f000000-0000-4000-8000-000000000102','Aprobador cambio','fase2-change-approver@example.invalid');
+
+insert into public.clients (id, client_kind, display_name)
+values ('7f000000-0000-4000-8000-000000000003', 'organization', 'Cliente cambio de tipo');
+
+insert into public.work_type_config_versions
+  (id, work_type_id, version_number, status, configuration)
+select v.config_id, wt.id, v.version_number, 'active', '{}'::jsonb
+from public.work_types wt
+join (values
+  ('plano_catastro', '7f000000-0000-4000-8000-000000000005'::uuid, 910),
+  ('delimitacion', '7f000000-0000-4000-8000-000000000007'::uuid, 911),
+  ('avaluo', '7f000000-0000-4000-8000-000000000009'::uuid, 912)
+) v(type_code, config_id, version_number) on v.type_code = wt.code;
+
+insert into public.work_state_definitions
+  (id, work_type_id, configuration_version_id, code, name)
+select v.state_id, c.work_type_id, c.id, 'cambio_tipo', 'Cambio de tipo'
+from public.work_type_config_versions c
+join (values
+  ('7f000000-0000-4000-8000-000000000005'::uuid, '7f000000-0000-4000-8000-000000000006'::uuid),
+  ('7f000000-0000-4000-8000-000000000007'::uuid, '7f000000-0000-4000-8000-000000000008'::uuid),
+  ('7f000000-0000-4000-8000-000000000009'::uuid, '7f000000-0000-4000-8000-00000000000a'::uuid)
+) v(config_id, state_id) on v.config_id = c.id;
+
+insert into public.projects (id, client_id, internal_code, name)
+values (
+  '7f000000-0000-4000-8000-000000000004',
+  '7f000000-0000-4000-8000-000000000003',
+  'F2-TYPE-APPROVAL', 'Contratación cambio de tipo'
+);
+
+insert into public.works
+  (id, project_id, work_type_id, configuration_version_id, internal_state_id, name)
+select
+  '7f000000-0000-4000-8000-00000000000b',
+  '7f000000-0000-4000-8000-000000000004',
+  c.work_type_id, c.id, '7f000000-0000-4000-8000-000000000006',
+  'Plano sujeto a cambio'
+from public.work_type_config_versions c
+where c.id = '7f000000-0000-4000-8000-000000000005';
+
+insert into public.works
+  (id, project_id, work_type_id, configuration_version_id, internal_state_id, name)
+select
+  '7f000000-0000-4000-8000-00000000000c',
+  '7f000000-0000-4000-8000-000000000004',
+  c.work_type_id, c.id, '7f000000-0000-4000-8000-000000000008',
+  'Trabajo destino no catastral'
+from public.work_type_config_versions c
+where c.id = '7f000000-0000-4000-8000-000000000007';
+
+insert into public.external_procedures
+  (id, project_id, work_id, provider, procedure_kind, is_active, monitoring_enabled)
+values (
+  '7f000000-0000-4000-8000-000000000060',
+  '7f000000-0000-4000-8000-000000000004',
+  '7f000000-0000-4000-8000-00000000000b',
+  'apt', 'cambio_tipo', true, true
+);
+
+insert into public.approval_targets
+  (id, owner_module, target_kind, target_entity_id, target_version, scope_kind,
+   project_id, work_id, target_snapshot, snapshot_hash, registered_by)
+values (
+  '7f000000-0000-4000-8000-00000000000d',
+  'projects', 'work_type_change', '7f000000-0000-4000-8000-00000000000b', 1, 'work',
+  '7f000000-0000-4000-8000-000000000004', '7f000000-0000-4000-8000-00000000000b',
+  jsonb_build_object(
+    'workTypeId', (select work_type_id::text from public.works where id='7f000000-0000-4000-8000-00000000000b'),
+    'configurationVersionId', '7f000000-0000-4000-8000-000000000005',
+    'internalStateId', '7f000000-0000-4000-8000-000000000006'
+  ),
+  'snapshot-hash-sintetico', '7f000000-0000-4000-8000-000000000001'
+);
+
+insert into public.approval_requests
+  (id, approval_target_id, project_id, work_id, action_code, status, reason,
+   impact_summary, requested_change, requested_by, correlation_id)
+values
+  ('7f000000-0000-4000-8000-000000000010','7f000000-0000-4000-8000-00000000000d','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','work.change_type','executing','Prueba mismatch','Impacto',jsonb_build_object('newType','delimitacion','newConfigurationVersionId','7f000000-0000-4000-8000-000000000007','newInternalStateId','7f000000-0000-4000-8000-000000000008'),'7f000000-0000-4000-8000-000000000001','8f000000-0000-4000-8000-000000000010'),
+  ('7f000000-0000-4000-8000-000000000020','7f000000-0000-4000-8000-00000000000d','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','work.change_type','executing','Sin decisión','Impacto',jsonb_build_object('newType','avaluo','newConfigurationVersionId','7f000000-0000-4000-8000-000000000009','newInternalStateId','7f000000-0000-4000-8000-00000000000a'),'7f000000-0000-4000-8000-000000000001','8f000000-0000-4000-8000-000000000020'),
+  ('7f000000-0000-4000-8000-000000000030','7f000000-0000-4000-8000-00000000000d','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','work.change_type','executing','Sin ejecución','Impacto',jsonb_build_object('newType','avaluo','newConfigurationVersionId','7f000000-0000-4000-8000-000000000009','newInternalStateId','7f000000-0000-4000-8000-00000000000a'),'7f000000-0000-4000-8000-000000000001','8f000000-0000-4000-8000-000000000030'),
+  ('7f000000-0000-4000-8000-000000000040','7f000000-0000-4000-8000-00000000000d','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','work.change_type','executing','Ejecución consumida','Impacto',jsonb_build_object('newType','avaluo','newConfigurationVersionId','7f000000-0000-4000-8000-000000000009','newInternalStateId','7f000000-0000-4000-8000-00000000000a'),'7f000000-0000-4000-8000-000000000001','8f000000-0000-4000-8000-000000000040'),
+  ('7f000000-0000-4000-8000-000000000050','7f000000-0000-4000-8000-00000000000d','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','work.change_type','executing','Cambio válido','Impacto',jsonb_build_object('newType','delimitacion','newConfigurationVersionId','7f000000-0000-4000-8000-000000000007','newInternalStateId','7f000000-0000-4000-8000-000000000008'),'7f000000-0000-4000-8000-000000000001','8f000000-0000-4000-8000-000000000050');
+
+insert into public.approval_decisions
+  (id, approval_request_id, project_id, work_id, decision, comment, decided_by,
+   target_version_reviewed, correlation_id)
+values
+  ('7f000000-0000-4000-8000-000000000011','7f000000-0000-4000-8000-000000000010','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','approved','Aprobado','7f000000-0000-4000-8000-000000000002',1,'8f000000-0000-4000-8000-000000000011'),
+  ('7f000000-0000-4000-8000-000000000031','7f000000-0000-4000-8000-000000000030','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','approved','Aprobado','7f000000-0000-4000-8000-000000000002',1,'8f000000-0000-4000-8000-000000000031'),
+  ('7f000000-0000-4000-8000-000000000041','7f000000-0000-4000-8000-000000000040','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','approved','Aprobado','7f000000-0000-4000-8000-000000000002',1,'8f000000-0000-4000-8000-000000000041'),
+  ('7f000000-0000-4000-8000-000000000051','7f000000-0000-4000-8000-000000000050','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','approved','Aprobado','7f000000-0000-4000-8000-000000000002',1,'8f000000-0000-4000-8000-000000000051');
+
+insert into public.approval_executions
+  (id, approval_request_id, project_id, work_id, execution_key, status,
+   attempt_count, started_at, finished_at, correlation_id)
+values
+  ('7f000000-0000-4000-8000-000000000012','7f000000-0000-4000-8000-000000000010','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','type-mismatch','running',1,statement_timestamp(),null,'8f000000-0000-4000-8000-000000000010'),
+  ('7f000000-0000-4000-8000-000000000021','7f000000-0000-4000-8000-000000000020','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','type-no-decision','running',1,statement_timestamp(),null,'8f000000-0000-4000-8000-000000000020'),
+  ('7f000000-0000-4000-8000-000000000042','7f000000-0000-4000-8000-000000000040','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','type-consumed','succeeded',1,statement_timestamp(),statement_timestamp(),'8f000000-0000-4000-8000-000000000040'),
+  ('7f000000-0000-4000-8000-000000000052','7f000000-0000-4000-8000-000000000050','7f000000-0000-4000-8000-000000000004','7f000000-0000-4000-8000-00000000000b','type-valid','running',1,statement_timestamp(),null,'8f000000-0000-4000-8000-000000000050');
+
+select set_config('app.actor_id','7f000000-0000-4000-8000-000000000001',true);
+
+select set_config('app.approval_request_id','7f000000-0000-4000-8000-000000000010',true);
+select set_config('app.correlation_id','8f000000-0000-4000-8000-000000000010',true);
+select set_config('app.change_comparison', jsonb_build_object(
+  'previous',(select target_snapshot from public.approval_targets where id='7f000000-0000-4000-8000-00000000000d'),
+  'requested',jsonb_build_object('newType','avaluo','newConfigurationVersionId','7f000000-0000-4000-8000-000000000009','newInternalStateId','7f000000-0000-4000-8000-00000000000a')
+)::text,true);
+select pg_temp.expect_sqlstate(
+  'mutación distinta de requested_change',
+  $$update public.works set
+      work_type_id=(select work_type_id from public.work_type_config_versions where id='7f000000-0000-4000-8000-000000000009'),
+      configuration_version_id='7f000000-0000-4000-8000-000000000009',
+      internal_state_id='7f000000-0000-4000-8000-00000000000a'
+    where id='7f000000-0000-4000-8000-00000000000b'$$,
+  '23514'
+);
+
+select set_config('app.approval_request_id','7f000000-0000-4000-8000-000000000020',true);
+select set_config('app.correlation_id','8f000000-0000-4000-8000-000000000020',true);
+select pg_temp.expect_sqlstate(
+  'solicitud sin decisión aprobatoria',
+  $$update public.works set
+      work_type_id=(select work_type_id from public.work_type_config_versions where id='7f000000-0000-4000-8000-000000000009'),
+      configuration_version_id='7f000000-0000-4000-8000-000000000009',
+      internal_state_id='7f000000-0000-4000-8000-00000000000a'
+    where id='7f000000-0000-4000-8000-00000000000b'$$,
+  '23514'
+);
+
+select set_config('app.approval_request_id','7f000000-0000-4000-8000-000000000030',true);
+select set_config('app.correlation_id','8f000000-0000-4000-8000-000000000030',true);
+select pg_temp.expect_sqlstate(
+  'solicitud sin ejecución',
+  $$update public.works set
+      work_type_id=(select work_type_id from public.work_type_config_versions where id='7f000000-0000-4000-8000-000000000009'),
+      configuration_version_id='7f000000-0000-4000-8000-000000000009',
+      internal_state_id='7f000000-0000-4000-8000-00000000000a'
+    where id='7f000000-0000-4000-8000-00000000000b'$$,
+  '23514'
+);
+
+select set_config('app.approval_request_id','7f000000-0000-4000-8000-000000000040',true);
+select set_config('app.correlation_id','8f000000-0000-4000-8000-000000000040',true);
+select pg_temp.expect_sqlstate(
+  'ejecución ya consumida',
+  $$update public.works set
+      work_type_id=(select work_type_id from public.work_type_config_versions where id='7f000000-0000-4000-8000-000000000009'),
+      configuration_version_id='7f000000-0000-4000-8000-000000000009',
+      internal_state_id='7f000000-0000-4000-8000-00000000000a'
+    where id='7f000000-0000-4000-8000-00000000000b'$$,
+  '23514'
+);
+
+select set_config('app.approval_request_id','7f000000-0000-4000-8000-000000000050',true);
+select set_config('app.correlation_id','8f000000-0000-4000-8000-000000000050',true);
+select set_config('app.change_comparison', jsonb_build_object(
+  'previous',(select target_snapshot from public.approval_targets where id='7f000000-0000-4000-8000-00000000000d'),
+  'requested',(select requested_change from public.approval_requests where id='7f000000-0000-4000-8000-000000000050'),
+  'summary','Comparativo sintético'
+)::text,true);
+
+update public.works set
+  work_type_id=(select work_type_id from public.work_type_config_versions where id='7f000000-0000-4000-8000-000000000007'),
+  configuration_version_id='7f000000-0000-4000-8000-000000000007',
+  internal_state_id='7f000000-0000-4000-8000-000000000008'
+where id='7f000000-0000-4000-8000-00000000000b';
+
+select pg_temp.expect_sqlstate(
+  'procedimiento histórico no se reactiva fuera de catastro',
+  $$update public.external_procedures set
+      is_active=true, monitoring_enabled=true,
+      deactivated_at=null, deactivated_by=null, deactivation_reason=null
+    where id='7f000000-0000-4000-8000-000000000060'$$,
+  '23514'
+);
+select pg_temp.expect_sqlstate(
+  'procedimiento histórico no cambia proveedor fuera de catastro',
+  $$update public.external_procedures set provider='siri'
+    where id='7f000000-0000-4000-8000-000000000060'$$,
+  '23514'
+);
+select pg_temp.expect_sqlstate(
+  'procedimiento histórico no cambia alcance fuera de catastro',
+  $$update public.external_procedures set work_id='7f000000-0000-4000-8000-00000000000c'
+    where id='7f000000-0000-4000-8000-000000000060'$$,
+  '23514'
+);
+select pg_temp.expect_sqlstate(
+  'payload aprobado no cambia después de borrador',
+  $$update public.approval_requests set requested_change='{"newType":"avaluo"}'::jsonb
+    where id='7f000000-0000-4000-8000-000000000050'$$,
+  '23514'
+);
+select pg_temp.expect_sqlstate(
+  'identidad de ejecución no cambia',
+  $$update public.approval_executions set execution_key='otra-clave'
+    where id='7f000000-0000-4000-8000-000000000052'$$,
+  '23514'
+);
+select pg_temp.expect_sqlstate(
+  'aprobación consumida no se reutiliza',
+  $$update public.works set
+      work_type_id=(select work_type_id from public.work_type_config_versions where id='7f000000-0000-4000-8000-000000000009'),
+      configuration_version_id='7f000000-0000-4000-8000-000000000009',
+      internal_state_id='7f000000-0000-4000-8000-00000000000a'
+    where id='7f000000-0000-4000-8000-00000000000b'$$,
+  '23514'
+);
+
+do $assert_type_change$
+begin
+  if (select count(*) from public.work_type_history
+      where work_id='7f000000-0000-4000-8000-00000000000b') <> 1
+     or (select status from public.approval_requests
+      where id='7f000000-0000-4000-8000-000000000050') <> 'executed'
+     or (select status from public.approval_executions
+      where id='7f000000-0000-4000-8000-000000000052') <> 'succeeded'
+     or exists (select 1 from public.external_procedures
+      where id='7f000000-0000-4000-8000-000000000060'
+        and (is_active or monitoring_enabled)) then
+    raise exception 'FAIL [cambio de tipo aprobado exacto]';
+  end if;
+  raise notice 'PASS [cambio de tipo exacto consume aprobación y conserva APT histórico]';
+end;
+$assert_type_change$;
+
+select 'F2-WORK-TYPE-APPROVAL PASS' as result;
+
+rollback;

@@ -1,0 +1,8 @@
+\set ON_ERROR_STOP on
+\pset pager off
+
+begin;
+\ir 00_surface_manifest.sql
+\ir 10_rls_structure.sql
+rollback;
+

@@ -1,0 +1,109 @@
+\set ON_ERROR_STOP on
+\pset pager off
+
+-- Matriz negativa exhaustiva: ninguna alta APT/SIRI, activa o inactiva,
+-- pertenece a los cuatro tipos de Trabajo distintos de Plano de catastro.
+begin;
+
+insert into public.app_users (id, auth_subject, display_name, email)
+values (
+  '7c000000-0000-4000-8000-000000000001',
+  '7c000000-0000-4000-8000-000000000002',
+  'Usuario matriz externa',
+  'fase2-external-matrix@example.invalid'
+);
+
+insert into public.clients (id, client_kind, display_name)
+values (
+  '7c000000-0000-4000-8000-000000000003',
+  'organization',
+  'Cliente matriz externa'
+);
+
+insert into public.projects (id, client_id, internal_code, name)
+values (
+  '7c000000-0000-4000-8000-000000000004',
+  '7c000000-0000-4000-8000-000000000003',
+  'F2-EXT-MATRIX',
+  'Contratación matriz externa'
+);
+
+do $external_matrix$
+declare
+  work_type_code text;
+  provider_code text;
+  active_value boolean;
+  work_type_id uuid;
+  config_id uuid;
+  state_id uuid;
+  work_id uuid;
+  rejected_cases integer := 0;
+begin
+  foreach work_type_code in array array[
+    'delimitacion', 'curvas_nivel', 'avaluo', 'croquis'
+  ] loop
+    select id into strict work_type_id
+    from public.work_types
+    where code = work_type_code;
+
+    config_id := gen_random_uuid();
+    state_id := gen_random_uuid();
+    work_id := gen_random_uuid();
+
+    insert into public.work_type_config_versions
+      (id, work_type_id, version_number, status, configuration)
+    values (config_id, work_type_id, 901, 'active', '{}'::jsonb);
+
+    insert into public.work_state_definitions
+      (id, work_type_id, configuration_version_id, code, name)
+    values (state_id, work_type_id, config_id, 'matriz_externa', 'Matriz externa');
+
+    insert into public.works
+      (id, project_id, work_type_id, configuration_version_id, internal_state_id, name)
+    values (
+      work_id,
+      '7c000000-0000-4000-8000-000000000004',
+      work_type_id,
+      config_id,
+      state_id,
+      'Trabajo ' || work_type_code
+    );
+
+    foreach provider_code in array array['apt', 'siri'] loop
+      foreach active_value in array array[true, false] loop
+        begin
+          insert into public.external_procedures
+            (project_id, work_id, provider, procedure_kind, is_active,
+             monitoring_enabled, deactivated_at, deactivated_by, deactivation_reason)
+          values (
+            '7c000000-0000-4000-8000-000000000004',
+            work_id,
+            provider_code,
+            'matriz',
+            active_value,
+            active_value,
+            case when active_value then null else statement_timestamp() end,
+            case when active_value then null else '7c000000-0000-4000-8000-000000000001'::uuid end,
+            case when active_value then null else 'alta histórica inválida' end
+          );
+          raise exception 'FAIL [%/%/%]: el alta externa fue aceptada',
+            work_type_code, provider_code, active_value;
+        exception
+          when sqlstate '23514' then
+            rejected_cases := rejected_cases + 1;
+        end;
+      end loop;
+    end loop;
+  end loop;
+
+  if rejected_cases <> 16 then
+    raise exception 'FAIL [matriz APT/SIRI]: esperaba 16 rechazos, obtuvo %', rejected_cases;
+  end if;
+
+  raise notice 'PASS [matriz APT/SIRI]: 16 altas rechazadas en cuatro tipos no catastrales';
+end;
+$external_matrix$;
+
+select 'F2-EXTERNAL-TYPE-MATRIX PASS' as result, 16 as rejected_cases;
+
+rollback;

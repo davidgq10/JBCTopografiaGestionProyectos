@@ -1,0 +1,69 @@
+\set ON_ERROR_STOP on
+\pset pager off
+
+begin;
+
+insert into public.app_users (id, auth_subject, display_name, email)
+values (
+  '7d000000-0000-4000-8000-000000000001',
+  '7d000000-0000-4000-8000-000000000002',
+  'Usuario concurrencia nota',
+  'fase2-note-race@example.invalid'
+);
+
+insert into public.clients (id, client_kind, display_name)
+values ('7d000000-0000-4000-8000-000000000003', 'organization', 'Cliente concurrencia nota');
+
+insert into public.work_type_config_versions
+  (id, work_type_id, version_number, status, configuration)
+select '7d000000-0000-4000-8000-000000000004', id, 902, 'active', '{}'::jsonb
+from public.work_types where code = 'croquis';
+
+insert into public.work_state_definitions
+  (id, work_type_id, configuration_version_id, code, name)
+select
+  '7d000000-0000-4000-8000-000000000005', work_type_id, id,
+  'concurrencia_nota', 'Concurrencia nota'
+from public.work_type_config_versions
+where id = '7d000000-0000-4000-8000-000000000004';
+
+insert into public.projects (id, client_id, internal_code, name)
+values (
+  '7d000000-0000-4000-8000-000000000006',
+  '7d000000-0000-4000-8000-000000000003',
+  'F2-NOTE-RACE', 'Contratación concurrencia nota'
+);
+
+insert into public.works
+  (id, project_id, work_type_id, configuration_version_id, internal_state_id, name)
+select
+  '7d000000-0000-4000-8000-000000000007',
+  '7d000000-0000-4000-8000-000000000006', work_type_id, id,
+  '7d000000-0000-4000-8000-000000000005', 'Trabajo concurrencia nota'
+from public.work_type_config_versions
+where id = '7d000000-0000-4000-8000-000000000004';
+
+insert into public.managements
+  (id, project_id, work_id, management_type_code, title, status_code)
+values (
+  '7d000000-0000-4000-8000-000000000008',
+  '7d000000-0000-4000-8000-000000000006',
+  '7d000000-0000-4000-8000-000000000007',
+  'test', 'Gestión concurrencia nota', 'open'
+);
+
+insert into public.management_notes
+  (id, project_id, work_id, management_id, logical_note_id, revision, body, created_by)
+values (
+  '7d000000-0000-4000-8000-000000000009',
+  '7d000000-0000-4000-8000-000000000006',
+  '7d000000-0000-4000-8000-000000000007',
+  '7d000000-0000-4000-8000-000000000008',
+  '7d000000-0000-4000-8000-00000000000a',
+  1, 'Revisión inicial',
+  '7d000000-0000-4000-8000-000000000001'
+);
+
+select 'F2-NOTE-RACE SETUP PASS' as result;
+
+commit;

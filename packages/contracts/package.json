@@ -1,0 +1,21 @@
+{
+  "name": "@jbc/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "verify": "node ./scripts/verify-contracts.mjs && node ./scripts/verify-dag.mjs",
+    "verify:dag": "node ./scripts/verify-dag.mjs",
+    "typecheck": "node ./node_modules/typescript/bin/tsc -p ./tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.8 <6"
+  }
+}

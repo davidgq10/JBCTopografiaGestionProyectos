@@ -1,0 +1,44 @@
+\set ON_ERROR_STOP on
+\pset pager off
+
+begin;
+
+insert into public.clients (id, client_kind, display_name)
+values ('7e000000-0000-4000-8000-000000000001', 'organization', 'Cliente incremental');
+
+insert into public.work_type_config_versions
+  (id, work_type_id, version_number, status, configuration)
+select '7e000000-0000-4000-8000-000000000002', id, 903, 'active', '{}'::jsonb
+from public.work_types where code = 'croquis';
+
+insert into public.work_state_definitions
+  (id, work_type_id, configuration_version_id, code, name)
+select
+  '7e000000-0000-4000-8000-000000000003', work_type_id, id,
+  'incremental', 'Incremental'
+from public.work_type_config_versions
+where id = '7e000000-0000-4000-8000-000000000002';
+
+insert into public.projects (id, client_id, internal_code, name)
+values (
+  '7e000000-0000-4000-8000-000000000004',
+  '7e000000-0000-4000-8000-000000000001',
+  'R3-INCREMENTAL',
+  'Contratación incremental R3'
+);
+
+insert into public.works
+  (id, project_id, work_type_id, configuration_version_id, internal_state_id, name)
+select
+  '7e000000-0000-4000-8000-000000000005',
+  '7e000000-0000-4000-8000-000000000004',
+  work_type_id,
+  id,
+  '7e000000-0000-4000-8000-000000000003',
+  'Trabajo incremental R3'
+from public.work_type_config_versions
+where id = '7e000000-0000-4000-8000-000000000002';
+
+commit;
+
+select 'F2-INCREMENTAL-FIXTURE-02 PASS' as result;

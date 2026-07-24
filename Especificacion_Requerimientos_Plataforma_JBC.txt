@@ -1,0 +1,1639 @@
+# Resumen ejecutivo
+
+Este documento constituye la línea base aprobada para desarrollar la plataforma web de control de proyectos de JBC Topografía. Consolida las decisiones tomadas a partir del análisis del archivo Reporte_ListadoPlanos.xlsx y de las revisiones posteriores realizadas con el usuario.
+
+La plataforma sustituirá el control concentrado en una hoja de cálculo por información normalizada de clientes, proyectos, inmuebles, gestiones, tareas, programación, trámites externos, documentos, aprobaciones y auditoría. Los proyectos se crearán exclusivamente de forma manual.
+
+## Objetivos del producto
+
+- Centralizar la información operativa y mantenerla trazable.
+- Separar estados internos de los estados oficiales de APT y SIRI.
+- Monitorear APT y SIRI únicamente para proyectos de Plano de catastro.
+- Administrar metadatos en Supabase y conservar los archivos exclusivamente en OneDrive.
+- Gestionar tareas, responsables, recursos, vencimientos y programación.
+- Integrar inteligencia artificial como apoyo, siempre con evidencia y aprobación humana.
+- Proporcionar una experiencia minimalista, accesible, responsive y completa desde celular.
+- Preservar el historial: archivar en lugar de eliminar.
+
+## Fuente analizada
+
+El libro de origen contiene una hoja con 134 registros y 14 columnas: Acciones, Contrato, Detalle, Área Real, Tomo, Asiento, Tipo, Estado, Fecha Trámite, Proceso, Estado JBC, COMENTARIOS, RESPONSABLE y PROGRAMACIÓN. La hoja mezcla información del proyecto, trámites APT, tareas, estados y agenda; por ello la nueva plataforma utilizará entidades separadas.
+
+El libro es una referencia funcional. No se migrarán ni importarán automáticamente sus proyectos.
+
+# Control de aprobación
+
+| Requisito | Tema | Estado |
+|---|---|---|
+| RF-001 | Clientes | Aprobado |
+| RF-002 | Proyectos por tipo | Aprobado |
+| RF-003 | Gestiones | Aprobado |
+| RF-004 | Tareas | Aprobado |
+| RF-005 | Programación | Aprobado |
+| RF-006 | Monitoreo APT y SIRI | Aprobado |
+| RF-007 | OneDrive | Aprobado |
+| RF-008 | Inteligencia artificial | Aprobado |
+| RF-009 | Notificaciones | Aprobado |
+| RF-010 | Identidad, roles y seguridad | Aprobado |
+| RF-011 | Tablero, búsqueda y reportes | Aprobado |
+| RF-012 v2 | Arquitectura y stack | Aprobado |
+| RF-013 | Migración desde Excel | Descartado: no implementar |
+| RF-014 ajustado | Catálogos y configuración | Aprobado |
+| RF-015 | Aprobaciones y auditoría | Aprobado |
+| RF-016 | Calidad y operación | Aprobado |
+| RF-017 | Respaldo y monitoreo | Aprobado |
+| RF-018 | Entornos y despliegue | Aprobado |
+| RF-019 | Modelo de datos | Aprobado |
+| RF-020 ajustado | UX minimalista, acento y celular | Aprobado |
+
+# Alcance y exclusiones
+
+## Incluido
+
+- Aplicación web PWA para escritorio, tableta y celular.
+- Creación manual de clientes y proyectos.
+- Gestión completa del trabajo interno.
+- Integraciones autorizadas con Microsoft, APT, SIRI y OpenAI.
+- Notificaciones dentro de la aplicación y en Windows.
+- Administración de catálogos, permisos, aprobaciones y auditoría.
+- Respaldo, monitoreo operativo y documentación de entrega.
+
+## Fuera del alcance inicial
+
+- Importación o migración automática de proyectos desde Excel.
+- Aplicación móvil nativa independiente.
+- Edición completa sin conexión.
+- Modo oscuro.
+- Microservicios y microfrontends.
+- Event Sourcing y CQRS completo.
+- Almacenamiento de archivos de proyectos en Supabase.
+- Eliminación física de documentos.
+- Escritura o presentación de trámites en APT o SIRI.
+- Complementos Premium sin aprobación previa.
+
+# RF-001 — Gestión de clientes
+
+## Propósito
+
+La aplicación deberá mantener un registro único y reutilizable de clientes, evitando duplicar sus datos en cada proyecto.
+
+## Información del cliente
+
+- Tipo: persona física o persona jurídica.
+- Nombre completo o razón social.
+- Identificación.
+- Teléfono y correo principales.
+- Direcciones estructuradas por provincia, cantón y distrito.
+- Contactos adicionales con puesto, relación y preferencia de comunicación.
+- Estado activo o archivado.
+- Observaciones autorizadas.
+- Fechas y usuarios de creación y modificación.
+
+## Reglas
+
+- Un cliente podrá tener varios proyectos y contactos.
+- La identificación será única cuando exista.
+- El sistema advertirá posibles duplicados antes de crear un cliente.
+- Los registros utilizados no se eliminarán; se archivarán con motivo.
+- Los documentos del cliente permanecerán en OneDrive.
+- Supabase conservará únicamente metadatos, tipo documental e identificadores de OneDrive.
+- Un documento nunca se eliminará físicamente desde la aplicación.
+- Para retirar un documento de uso corriente se moverá a 99-ARCHIVADOS y se registrarán motivo, usuario, fecha y ruta anterior.
+
+## Criterios de aceptación
+
+- Es posible crear, consultar, editar y archivar clientes según permisos.
+- Un cliente puede vincularse a varios proyectos sin duplicación.
+- Los contactos y direcciones se administran de forma independiente.
+- Ninguna acción de la interfaz elimina documentos.
+- Toda operación documental queda auditada.
+
+# RF-002 — Gestión de proyectos por tipo
+
+## Propósito
+
+La aplicación deberá crear y administrar proyectos manualmente, mostrando únicamente la información y los módulos correspondientes al tipo seleccionado.
+
+## Tipos iniciales
+
+| Tipo | APT | SIRI |
+|---|---:|---:|
+| Delimitación | No | No |
+| Curvas de nivel | No | No |
+| Avalúo | No | No |
+| Croquis | No | No |
+| Plano de catastro | Sí | Sí |
+
+## Información común
+
+- Código interno único.
+- Cliente.
+- Nombre y descripción.
+- Tipo y versión de configuración.
+- Prioridad, estado interno y responsables.
+- Fechas estimadas y reales.
+- Participantes.
+- Uno o varios inmuebles o lotes.
+- Carpeta raíz de OneDrive.
+- Motivos de espera, cancelación, cierre o archivo.
+
+## Reglas por tipo
+
+- Delimitación, Curvas de nivel, Avalúo y Croquis no mostrarán ni almacenarán propiedades APT o SIRI.
+- Plano de catastro admitirá contratos, presentaciones y reingresos APT.
+- Plano de catastro admitirá apelaciones y solicitudes de mantenimiento SIRI como trámites separados.
+- Un proyecto podrá tener varios lotes y varios trámites.
+- El estado interno JBC permanecerá separado del estado oficial externo.
+- Cambiar el tipo no eliminará historia ni propiedades anteriores.
+- Un cambio de tipo iniciado requerirá comparativo y aprobación.
+
+## Creación manual
+
+El flujo solicitará cliente, tipo, propiedades aplicables, inmuebles, responsables, fechas y vista previa. El proyecto solo se creará después de confirmación.
+
+## Criterios de aceptación
+
+- Cada tipo muestra exclusivamente sus campos autorizados.
+- APT y SIRI aparecen únicamente en Plano de catastro.
+- Los trámites externos tienen historia independiente.
+- No existe importador de proyectos desde Excel.
+- No se pierde información al cambiar o archivar un proyecto.
+
+# RF-003 — Gestión de gestiones
+
+## Propósito
+
+La plataforma deberá organizar el trabajo con la relación Proyecto → Gestión → Tarea → Programación.
+
+## Información de una gestión
+
+- Tipo, título y descripción.
+- Proyecto y trámite externo relacionado.
+- Estado, prioridad y responsable.
+- Inicio, vencimiento y próxima fecha de seguimiento.
+- Resultado.
+- Notas y documentos relacionados.
+- Motivo de espera o archivo.
+
+## Reglas
+
+- Las notas conservarán autor, fecha y versiones anteriores.
+- El estado En espera exigirá motivo, responsable interno o externo y fecha de seguimiento.
+- Al reanudar, la gestión regresará a su etapa anterior.
+- Las gestiones cerradas o archivadas permanecerán consultables.
+- Cambios de responsable, fecha, estado y resultado quedarán auditados.
+
+## Criterios de aceptación
+
+- Es posible consultar todas las gestiones de un proyecto en orden cronológico.
+- Una gestión puede originar varias tareas.
+- Las esperas sin motivo o fecha de seguimiento se rechazan.
+- El historial no se sobrescribe.
+
+# RF-004 — Gestión de tareas
+
+## Capacidades
+
+- Tareas, subtareas y listas de comprobación.
+- Dependencias entre tareas.
+- Prioridad, responsable, fechas y esfuerzo estimado.
+- Porcentaje de avance y duración real.
+- Estados configurables y motivo de espera.
+- Asociación con gestiones, documentos y trámites.
+- Creación manual, desde plantilla o como propuesta de IA.
+
+## Reglas
+
+- Se impedirán dependencias circulares.
+- Una tarea podrá bloquear a otra hasta completar una condición.
+- Cancelar o archivar exigirá motivo; no habrá eliminación física.
+- La fecha límite será distinta de los bloques de ejecución programados.
+- La IA podrá proponer tareas desde comentarios, pero un usuario deberá aprobarlas.
+- Se generarán notificaciones dentro de la aplicación y en Windows.
+
+## Criterios de aceptación
+
+- Las tareas pueden descomponerse y relacionarse.
+- Las dependencias inválidas se rechazan.
+- Los cambios concurrentes no sobrescriben información silenciosamente.
+- El cierre, cancelación y archivo conservan el historial.
+- El flujo principal funciona desde celular.
+
+# RF-005 — Programación
+
+## Capacidades
+
+- Calendario mensual, semanal, diario y agenda.
+- Varios bloques de ejecución por tarea.
+- Asignación de personas, equipos y vehículos.
+- Ubicación y modalidad: oficina, campo, reunión o seguimiento.
+- Reprogramación, confirmación y recordatorios.
+- Sugerencias de IA sujetas a confirmación.
+
+## Reglas
+
+- La fecha límite de una tarea no se confundirá con su horario de ejecución.
+- Se detectarán conflictos de responsables y recursos antes de confirmar.
+- Las fechas se almacenarán en UTC y se mostrarán en America/Costa_Rica.
+- El calendario tendrá alternativa textual accesible.
+- En celular se utilizará agenda o lista como vista inicial.
+
+## Criterios de aceptación
+
+- El sistema impide o advierte doble reserva.
+- Una tarea puede dividirse en varios bloques.
+- Los conflictos son visibles mediante texto e icono.
+- Los recordatorios respetan preferencias y horario silencioso.
+
+# RF-006 — Monitoreo de APT y SIRI
+
+## Alcance
+
+La integración será exclusivamente de consulta y monitoreo. No presentará planos, apelaciones ni solicitudes.
+
+## Horario
+
+Las consultas automáticas se ejecutarán todos los días a las 07:00, 13:00 y 19:00, hora de Costa Rica. Existirá Consultar ahora con limitación de frecuencia.
+
+## Endpoints APT permitidos
+
+- GET /APT2/Login
+- GET /APT2
+- GET /APT2/Plano/Consulta
+- POST /APT2/Plano/ConsultarPlanos
+- GET /APT2/Contrato/Consulta
+- POST /APT2/Contrato/ConsultarContratos
+- GET /APT2/Contrato/Ver
+- GET /APT2/Plano/RedireccionarVerPlano
+
+El endpoint POST /APT2/Plano/RedireccionarCargarPlano queda excluido porque conduce al flujo de carga.
+
+## Reglas técnicas y funcionales
+
+- Lista blanca estricta de métodos y rutas.
+- Manejo autorizado de sesión, cookies y CSRF sin registrar secretos.
+- Consultas secuenciales, limitadas y deduplicadas.
+- Fotografía inicial y eventos posteriores solo cuando existan cambios.
+- Conservación del texto original y una clasificación normalizada.
+- Fecha de corte, última consulta exitosa y nivel de frescura visibles.
+- Fallos parciales no invalidarán resultados exitosos.
+- Reintentos idempotentes.
+- SIRI monitoreará apelaciones y mantenimiento únicamente para Plano de catastro.
+- No se evadirán CAPTCHA, MFA ni restricciones institucionales.
+- Cloud Run estará condicionado a autorización; existirá trabajador local de Windows como alternativa.
+
+## Criterios de aceptación
+
+- Ningún código de monitoreo puede invocar el endpoint de carga.
+- El horario se prueba en America/Costa_Rica.
+- No se duplican eventos ni notificaciones.
+- Una caída externa no bloquea proyectos, tareas ni agenda.
+- La activación real requiere validación legal y técnica.
+
+# RF-007 — Gestión de documentos y carpetas en OneDrive
+
+## Principios
+
+- Los archivos se almacenarán únicamente en OneDrive.
+- Supabase conservará metadatos y los identificadores driveId y driveItemId.
+- Las carpetas existentes se vincularán sin renombrar ni reorganizar automáticamente.
+- Toda escritura tendrá vista previa y confirmación o aprobación según su impacto.
+
+## Estructura inicial
+
+1. 01-ESTUDIO PREVIO
+2. 02-PLANOS RELACIONADOS
+3. 03-DATOS DEL LEVANTAMIENTO
+4. 04-ARCHIVO DWG
+5. 05-PRESENTACIONES
+6. 99-ARCHIVADOS
+
+Las plantillas podrán incluir carpetas adicionales por tipo de proyecto.
+
+## Operaciones
+
+- Crear, vincular, renombrar, mover, archivar y restaurar.
+- Subir documentos desde escritorio o celular.
+- Ejecutar operaciones masivas después de una vista previa.
+- Detectar cambios directos mediante notificaciones y delta de Microsoft Graph.
+
+## Protección y eliminación
+
+- Los documentos nunca se eliminarán.
+- Una carpeta no vacía se archivará.
+- Solo una carpeta completamente vacía podrá enviarse a la papelera normal de OneDrive, con motivo y doble control.
+- No se utilizará permanentDelete.
+- La raíz del proyecto y 99-ARCHIVADOS no podrán eliminarse.
+- Las carpetas estándar estarán protegidas; un administrador solo podrá desproteger una carpeta vacía con motivo.
+
+## Criterios de aceptación
+
+- Repetir una operación no duplica movimientos.
+- Una aprobación queda inválida si el elemento cambió.
+- Los cambios directos de OneDrive se reflejan en la plataforma.
+- No existe contenido binario del proyecto en Supabase.
+
+# RF-008 — Asistente de inteligencia artificial
+
+## Propósito
+
+La IA apoyará la comprensión del estado del proyecto sin convertirse en fuente autoritativa ni ejecutar acciones sensibles.
+
+## Funciones
+
+- Resumir estado, bloqueos, riesgos y próximos pasos.
+- Detectar datos faltantes o contradictorios.
+- Clasificar documentos.
+- Responder preguntas en lenguaje natural.
+- Proponer tareas, responsables y programación.
+- Explicar cambios APT/SIRI con evidencia.
+
+## Implementación
+
+- OpenAI Responses API desde backend.
+- Structured Outputs y store:false.
+- Modelo configurable.
+- Enrutamiento inicial: gpt-5.6-luna para extracción rutinaria, gpt-5.6-terra para análisis equilibrado y gpt-5.6-sol para análisis profundo o baja confianza.
+- Cada salida incluirá evidencia, confianza y fecha de corte.
+- Prompts versionados y resultados estructurados.
+- Límite mensual configurable y alertas de consumo.
+
+## Seguridad
+
+- No se enviarán credenciales, tokens, cookies ni información innecesaria.
+- Se minimizarán datos personales.
+- La IA solo consultará registros autorizados por el usuario.
+- No cerrará, cancelará, archivará ni moverá información sin aprobación.
+- No operará APT ni SIRI.
+- Si OpenAI falla, las funciones básicas continuarán.
+
+## Criterios de aceptación
+
+- Una sugerencia se distingue de un dato confirmado.
+- Aprobar o rechazar queda auditado.
+- Las pruebas automatizadas utilizan simuladores.
+- Ninguna respuesta puede elevar permisos ni revelar secretos.
+
+# RF-009 — Notificaciones
+
+## Canales
+
+- Centro persistente dentro de la aplicación.
+- Notificaciones de Windows mediante PWA y Web Push.
+- Enlaces directos al registro relacionado.
+
+## Categorías
+
+- APT.
+- SIRI.
+- Tareas.
+- Programación.
+- OneDrive.
+- Integraciones.
+- Aprobaciones.
+- Inteligencia artificial.
+
+## Reglas
+
+- Severidades informativa, atención, alta y crítica.
+- Preferencias por categoría y dispositivo.
+- Horario silencioso inicial de 07:00 a 20:00.
+- Varios dispositivos por usuario.
+- Claves VAPID protegidas.
+- Deduplicación e idempotencia.
+- Ninguna notificación incluirá información sensible.
+- Si Web Push falla, el aviso interno permanecerá.
+
+## Criterios de aceptación
+
+- El usuario puede leer, filtrar y marcar avisos.
+- Denegar permisos de Windows no impide usar la aplicación.
+- Los enlaces respetan permisos.
+- Los reintentos no producen duplicados.
+
+# RF-010 — Autenticación, roles y seguridad
+
+## Identidad
+
+- Microsoft Entra ID mediante Supabase Auth.
+- Acceso limitado al tenant y a usuarios previamente autorizados.
+- MFA exigido mediante Microsoft.
+
+## Roles
+
+- Administrador.
+- Coordinador.
+- Técnico.
+- Solo lectura.
+
+## Reglas
+
+- RLS en toda tabla expuesta.
+- Service role y secretos nunca estarán disponibles en el navegador.
+- Administradores y coordinadores resolverán aprobaciones documentales.
+- Técnicos podrán solicitar acciones según sus permisos.
+- Las credenciales APT/SIRI serán individuales, cifradas y no visibles, incluso para administradores.
+- Auditoría inmutable de accesos, cambios de permisos e intentos rechazados.
+- Principio de privilegio mínimo para Microsoft Graph.
+
+## Criterios de aceptación
+
+- Existen pruebas positivas y negativas para cada rol.
+- Un usuario no puede consultar datos fuera de su alcance.
+- Revocar un usuario impide nuevos accesos.
+- La interfaz no sustituye la autorización del backend.
+
+# RF-011 — Tablero, búsqueda y reportes
+
+## Tablero
+
+El tablero se adaptará al rol y mostrará proyectos, estados internos, cambios APT/SIRI, tareas, agenda, carga de trabajo, OneDrive, aprobaciones, salud y frescura.
+
+La vista Control General será equivalente al control del Excel, pero se alimentará de entidades normalizadas.
+
+## Búsqueda
+
+Se buscará por proyecto, cliente, identificación, contrato, plano, finca, tomo/asiento, trámite SIRI, archivo y notas autorizadas. Habrá filtros, vistas guardadas y paginación del servidor.
+
+## Reportes
+
+- Exportación Excel, CSV y PDF.
+- Indicadores por periodo, tipo, estado y responsable.
+- Resumen de IA con evidencia.
+- Guardar en OneDrive requerirá aprobación.
+- Toda exportación quedará auditada.
+
+## Criterios de aceptación
+
+- La búsqueda respeta RLS.
+- Totales y reportes concuerdan con la fuente.
+- Los filtros se conservan durante la sesión.
+- El tablero prioriza acciones y evita saturación visual.
+
+# RF-012 v2 — Arquitectura técnica y stack
+
+## Decisión arquitectónica
+
+| Nivel | Decisión |
+|---|---|
+| Arquitectura principal | Monolito modular |
+| Organización interna | Clean Architecture |
+| Integraciones | Arquitectura hexagonal, puertos y adaptadores |
+| Procesos asíncronos | Event-Driven con outbox transaccional |
+| Despliegue | Serverless híbrido |
+
+Los módulos serán Identidad, Clientes, Proyectos, Gestiones, Tareas, Programación, Trámites externos, Documentos, Aprobaciones, Notificaciones, IA, Auditoría y Administración. Cada módulo será propietario de sus reglas y datos.
+
+Las capas serán Dominio, Aplicación, Puertos, Adaptadores y Presentación. El dominio no dependerá de React, Supabase, Microsoft Graph, OpenAI, APT ni SIRI.
+
+No se utilizarán inicialmente microservicios, microfrontends, Event Sourcing, Redux, Zustand ni CQRS completo.
+
+## Front-end
+
+- React y TypeScript en modo strict.
+- Vite y pnpm.
+- Mantine Core, Hooks, Form, Modals, Notifications, Dates, Dropzone, Charts, Spotlight y NProgress.
+- Tabler Icons.
+- Zod y schemaResolver.
+- React Router en Data Mode.
+- TanStack Query, Table y Virtual.
+- FullCalendar.
+- Day.js con UTC y zona horaria.
+- Supabase JavaScript SDK.
+- vite-plugin-pwa y Workbox con injectManifest.
+- Vitest, React Testing Library, MSW, Playwright y axe-core.
+- ESLint, Prettier y Storybook.
+
+No se incorporará un gestor global adicional mientras React, Context y TanStack Query cubran la necesidad.
+
+## Organización del repositorio
+
+    apps/
+      web/
+    packages/
+      domain/
+      application/
+      contracts/
+      testing/
+    supabase/
+      migrations/
+      functions/
+    workers/
+      monitoring/
+
+## Infraestructura
+
+- Cloudflare Pages para la PWA.
+- Supabase para PostgreSQL, Auth, RLS, Realtime, Edge Functions y Cron.
+- OneDrive para archivos.
+- Cloud Run Job para el trabajador autorizado en nube.
+- Trabajador local Windows como alternativa.
+- OpenAI desde backend.
+
+Supabase Storage no almacenará archivos del proyecto.
+
+## Eventos iniciales
+
+- apt.status_changed
+- siri.procedure_changed
+- onedrive.item_changed
+- task.overdue
+- approval.requested
+- approval.resolved
+- notification.requested
+- project.archived
+
+Los consumidores serán idempotentes y soportarán reintentos. Realtime no sustituirá la fuente transaccional.
+
+## Límites y costos
+
+La primera etapa utilizará planes gratuitos cuando sean suficientes. Se medirán base de datos, usuarios, funciones, mensajes, logs y trabajos. Se alertará al 70 % y al 85 %. Cualquier migración a pago requerirá aprobación.
+
+## Criterios de aceptación
+
+- Se pueden cambiar adaptadores sin modificar el dominio.
+- No existen llamadas privilegiadas desde React.
+- Los módulos no tienen dependencias circulares.
+- Los eventos repetidos no duplican efectos.
+- Los contratos y decisiones se documentan.
+
+# RF-013 — Descartado
+
+No se desarrollará importación, migración ni sincronización de proyectos desde Reporte_ListadoPlanos.xlsx. Los proyectos se crearán manualmente.
+
+Este identificador permanece en la trazabilidad como Fuera de alcance para impedir que otra etapa lo reintroduzca o renumere.
+
+# RF-014 ajustado — Catálogos y configuración por tipo
+
+## Reglas generales
+
+Cada valor tendrá código invariable, nombre, descripción, color, icono, orden, tipos aplicables, vigencia, versión, estado e indicador protegido. Los valores utilizados se archivarán; no se eliminarán. La opción Otro exigirá descripción.
+
+## Tipos de proyecto
+
+- Delimitación.
+- Curvas de nivel.
+- Avalúo.
+- Croquis.
+- Plano de catastro.
+
+Cada tipo configurará campos, estados, transiciones, tareas, carpetas, documentos, duración, integraciones, alertas, cierre y roles.
+
+## Estados internos
+
+- Borrador.
+- Pendiente de información.
+- Planificado.
+- En ejecución.
+- Revisión interna.
+- Corrección interna.
+- Listo para entrega.
+- Entregado.
+- Cerrado.
+- Cancelado.
+- Archivado.
+
+En espera será un estado transversal con motivo, responsable y seguimiento; al reanudar conservará la etapa anterior.
+
+Etapas técnicas disponibles: estudio previo, coordinación, programación de campo, levantamiento, procesamiento, cálculo, elaboración, revisión, corrección, preparación de entregables y entrega.
+
+Plano de catastro podrá añadir preparación APT, presentado APT, atención de defectos, reingreso, plano inscrito, apelación SIRI y mantenimiento SIRI.
+
+## Estados externos normalizados
+
+- Sin consultar.
+- No encontrado.
+- En trámite.
+- Requiere atención.
+- Resuelto favorablemente.
+- Resuelto desfavorablemente.
+- Finalizado.
+- Error de consulta.
+- Pendiente de clasificar.
+
+El texto original siempre se conservará.
+
+## Prioridades
+
+- Baja.
+- Normal.
+- Alta.
+- Urgente.
+- Crítica.
+
+Urgente y Crítica exigirán justificación; Crítica notificará al coordinador.
+
+## Tipos de gestión
+
+- Comunicación y solicitud de información.
+- Revisión documental y estudio registral/catastral.
+- Coordinación y programación.
+- Campo, procesamiento, cálculo y elaboración.
+- Revisión, calidad y corrección.
+- Presentación, consulta, defectos y reingreso APT.
+- Apelación o mantenimiento SIRI.
+- Gestiones ante municipalidad, MOPT u otra institución.
+- Entrega, seguimiento y administración.
+- Otro.
+
+## Tipos de tarea
+
+- Administrativa, coordinación, campo y técnica de oficina.
+- CAD, GIS, cálculo e investigación.
+- Preparación documental, revisión, calidad y corrección.
+- Cliente, seguimiento externo, APT, SIRI, entrega, aprobación y recordatorio.
+- Otro.
+
+## Tipos documentales
+
+- Cliente: identificación, autorización, contrato, correspondencia y comprobantes.
+- Registral/catastral: informes, certificaciones, planos, escrituras, finca, tomo/asiento y minutas.
+- Campo: GNSS, estación total, libretas, fotografías, puntos, dron, nube de puntos y bitácora.
+- Técnicos: DWG, DXF, SHP/GIS, hojas, cálculos, superficies, curvas, croquis, informes, avalúos y PDF.
+- APT/SIRI: comprobantes, planos presentados, minuta, corrección, reingreso, plano inscrito, apelación, evidencia, mantenimiento y resolución.
+- Entrega: producto final, comprobante, aceptación y versión sustituida.
+
+Cada tipo podrá indicar carpeta sugerida, proyectos aplicables, extensiones, obligatoriedad, sensibilidad, aprobación y conservación.
+
+## Motivos de espera
+
+- Información o autorización del cliente.
+- Pago o gestión administrativa.
+- Acceso al inmueble o clima.
+- Personal, equipo o vehículo.
+- Documento registral/catastral.
+- Respuesta APT, SIRI, municipalidad, MOPT u otra institución.
+- Revisión interna o tercero.
+- Otro.
+
+## Motivos de archivo o cancelación
+
+- Proyecto completado, cancelado, suspendido, duplicado, sustituido, sin información, imposible técnicamente o cierre administrativo.
+- Tarea innecesaria, duplicada, sustituida, cambio de alcance, proyecto cancelado o error.
+- Documento/carpeta obsoleto, duplicado, sustituido, mal clasificado, no correspondiente, cierre o solicitud documentada.
+
+## Especialidades y recursos
+
+Especialidades: coordinación, topografía, asistencia, GNSS, estación total, nivelación, dron, CAD, GIS, catastro, registro, avalúos, informes, revisión, calidad, APT, SIRI, servicio al cliente y administración.
+
+Recursos: GNSS base/móvil, estación total, nivel, colector, dron, cámara, computadora, auxiliares y vehículos. Estados: disponible, reservado, en uso, mantenimiento, fuera de servicio y archivado.
+
+## Aprobaciones configurables
+
+Niveles: confirmación, aprobación de coordinador/administrador, administrador y doble control. Se configurarán por acción conforme al RF-015.
+
+## Versionamiento
+
+Los proyectos nuevos usarán la versión activa. Los existentes conservarán la versión original. Actualizarlos requerirá comparativo y aprobación.
+
+# RF-015 — Centro de aprobaciones y auditoría
+
+## Centro de aprobaciones
+
+La bandeja mostrará solicitudes pendientes, realizadas, aprobadas, rechazadas, vencidas, en ejecución y fallidas. Cada solicitud tendrá acción, proyecto, elemento, estado actual, cambio, motivo, impacto, solicitante, rol aprobador, fecha límite, evidencia y origen.
+
+## Estados
+
+- Borrador.
+- Pendiente.
+- Aprobada.
+- Rechazada.
+- Vencida.
+- Cancelada.
+- En ejecución.
+- Ejecutada.
+- Fallida.
+- Sustituida.
+
+Aprobar y ejecutar serán eventos separados.
+
+## Flujo
+
+1. Validar la solicitud.
+2. Registrar y notificar.
+3. Revisar impacto.
+4. Aprobar o rechazar con comentario.
+5. Revalidar versión del elemento.
+6. Ejecutar una sola vez.
+7. Registrar y notificar resultado.
+
+Si el elemento cambió, la solicitud quedará desactualizada.
+
+## Acciones controladas
+
+- Mover, renombrar, archivar o restaurar en OneDrive.
+- Enviar una carpeta vacía a la papelera.
+- Operaciones masivas.
+- Cambiar tipo de proyecto.
+- Cancelar, cerrar o archivar proyectos y tareas.
+- Modificar catálogos, plantillas, permisos o roles.
+- Aplicar propuestas de IA.
+- Guardar reportes en OneDrive.
+
+## Auditoría
+
+Registrará accesos, intentos rechazados, datos, estados, responsables, programación, consultas APT/SIRI, OneDrive, IA, aprobaciones, permisos, configuración y exportaciones. Cada evento tendrá fecha UTC, usuario/proceso, rol, módulo, entidad, valores anterior/nuevo, motivo, resultado, IP disponible y correlación.
+
+La auditoría será de solo adición. No se editará ni eliminará desde la aplicación. Nunca contendrá secretos.
+
+## Criterios de aceptación
+
+- Doble control implica dos personas.
+- Una aprobación obsoleta no se ejecuta.
+- La acción se ejecuta como máximo una vez.
+- Rechazos y archivos exigen motivo.
+- Toda exportación de auditoría queda auditada.
+
+# RF-016 — Requisitos no funcionales
+
+## Rendimiento
+
+- LCP igual o menor a 2,5 s.
+- INP igual o menor a 200 ms.
+- CLS igual o menor a 0,1.
+- Medición al percentil 75.
+- Tablero inicial menor a 5 s.
+- Consultas ordinarias p95 menores a 2 s.
+- Escrituras p95 menores a 3 s, excluyendo servicios externos.
+- Búsqueda menor a 3 s.
+
+## Capacidad
+
+- 25 usuarios simultáneos.
+- 10 000 proyectos.
+- 100 000 tareas y gestiones.
+- 500 000 eventos de auditoría.
+- Paginación del servidor para listados.
+
+## Disponibilidad y degradación
+
+Objetivo operativo mensual del 99 %, sin SLA contractual en planes gratuitos. Fallar APT, SIRI, OneDrive, OpenAI o Web Push no bloqueará módulos independientes. Se mostrará última consulta exitosa y se reintentará con espera progresiva.
+
+## Monitoreo programado
+
+Cada ciclo deberá iniciar dentro de 15 minutos, intentar finalizar antes del siguiente y conservar éxitos parciales.
+
+## Compatibilidad y accesibilidad
+
+- Edge y Chrome: dos versiones estables recientes.
+- Chrome Android y Safari iPhone para el flujo móvil.
+- WCAG 2.2 AA.
+- Navegación por teclado, foco visible, contraste, etiquetas, errores asociados, lectores de pantalla y reflujo.
+
+## Sin conexión
+
+La PWA abrirá su estructura e informará el estado, pero no permitirá modificaciones sin conexión ni almacenará datos sensibles por defecto.
+
+## Concurrencia
+
+Se usará control de versión, comparativo y resolución explícita; nunca sobrescritura silenciosa.
+
+## Seguridad y calidad
+
+- OWASP ASVS 5.0 nivel 2 aplicable.
+- HTTPS, CSP, validación servidor, protección contra inyección, sesiones y secretos protegidos.
+- Pruebas unitarias, integración, RLS, E2E, accesibilidad, rendimiento, capacidad y fallos externos.
+- Cobertura mínima del 80 % en dominio y aplicación.
+- TypeScript estricto, migraciones y contratos versionados.
+
+# RF-017 — Respaldo, recuperación y monitoreo
+
+## Respaldo
+
+- Respaldo lógico diario a las 22:00, hora de Costa Rica.
+- Comprimido, cifrado y con huella de integridad.
+- Guardado en carpeta administrativa restringida de OneDrive.
+- Incluye esquema, datos, catálogos, permisos, auditoría y referencias.
+- Excluye contraseñas, tokens, cookies, claves y archivos de proyecto.
+
+## Retención
+
+- Diarios: 30 días.
+- Mensuales: 12 meses.
+- Informes de restauración y auditoría: permanentes.
+
+## Restauración
+
+Prueba trimestral en entorno aislado, sin notificaciones ni consultas externas. Una copia no se considerará válida hasta restaurarse.
+
+- RPO objetivo: 24 horas.
+- RTO objetivo: 8 horas laborables.
+
+## Salud y alertas
+
+Panel para aplicación, Supabase, autenticación, Graph, APT, SIRI, OpenAI, Push, trabajador, cron, respaldo y restauración. Alertas por fallos, integridad, ciclos omitidos, error superior al 20 %, cola detenida y límites al 70/85 %.
+
+## Registros e incidentes
+
+Logs estructurados con correlación, duración, resultado e intento, sin secretos. Procedimientos para datos, despliegues, accesos, credenciales, OneDrive, monitoreo y operaciones erróneas.
+
+# RF-018 — Entornos, despliegue y versiones
+
+## Entornos
+
+- Local.
+- Desarrollo.
+- Pruebas/aceptación.
+- Producción.
+
+Datos, credenciales, tareas y destinos estarán separados. No se copiarán datos reales a entornos inferiores sin anonimización.
+
+## Integración y despliegue
+
+Git con rama principal protegida. Cada cambio ejecutará formato, lint, tipos, arquitectura, pruebas, dependencias, construcción, migraciones y navegador.
+
+Producción requerirá lista de cambios, pruebas, respaldo, reversión y aprobación.
+
+## Versiones y funciones
+
+Versionado Mayor.Menor.Corrección. Feature flags para APT/SIRI, OneDrive, Push, IA y nuevos flujos. Cada despliegue mostrará entorno y versión.
+
+## Reversión
+
+Se conservará la última versión estable. Los datos no se eliminarán al volver atrás. Las migraciones destructivas requerirán respaldo, prueba y aprobación.
+
+## Entrega
+
+Código, instalación, arquitectura, datos, integraciones, configuración, despliegue, respaldo, administración, usuario, permisos, pruebas, ADR, dependencias y licencias.
+
+# RF-019 — Modelo de datos
+
+## Entidades
+
+- Usuarios, roles, permisos, especialidades y dispositivos.
+- Clientes, contactos y direcciones.
+- Proyectos, tipos, configuraciones, participantes, propiedades e inmuebles.
+- Gestiones, notas, tareas, listas, dependencias y programación.
+- Recursos, equipos y vehículos.
+- Trámites externos, eventos de estado y ejecuciones.
+- Elementos y operaciones OneDrive.
+- Aprobaciones y decisiones.
+- Notificaciones y suscripciones.
+- Ejecuciones, evidencias y propuestas de IA.
+- Auditoría, outbox, catálogos y versiones.
+
+## Relaciones
+
+- Un cliente tiene varios proyectos.
+- Un proyecto tiene varios inmuebles, participantes, gestiones, tareas, trámites y documentos referenciados.
+- Una gestión genera tareas.
+- Una tarea puede tener subtareas, dependencias, lista y varios bloques.
+- Un trámite conserva varios eventos.
+- Una aprobación se relaciona con la entidad y versión revisadas.
+
+## Campos transversales
+
+UUID, creador, fechas UTC, modificador, versión, archivo, motivo y correlación cuando correspondan.
+
+## Reglas
+
+- Sin eliminación en cascada de proyectos.
+- Historia y auditoría de solo adición.
+- Texto externo original separado de normalización.
+- RLS para toda entidad expuesta.
+- Índices para proyecto, cliente, contrato, plano, finca, tomo/asiento y fechas.
+- Archivos fuera de la base.
+- Búsqueda limitada por permisos.
+
+# RF-020 ajustado — Sistema visual, personalización y celular
+
+## Objetivo visual
+
+La interfaz será profesional, serena, clara y minimalista. Construirá jerarquía con whitespace, tipografía, alineación y contraste moderado, no con cajas y bordes.
+
+## Reglas
+
+- Separar primero con espacio, después título, fondo sutil, divisor y finalmente borde.
+- Sin tarjetas anidadas.
+- Un solo nivel de contenedor visual.
+- Card y Paper sin borde por defecto.
+- Sombras solo para elementos flotantes.
+- Una acción primaria por zona.
+- Detalle secundario mediante divulgación progresiva.
+- Ningún vencimiento, riesgo o cambio externo se ocultará por minimalismo.
+
+## Tokens iniciales
+
+- Espaciado: 4, 8, 12, 16, 24, 32, 48 y 64 px.
+- Radio: 8 px; paneles 12 px.
+- Controles: 40–44 px.
+- Filas: 48 px; compactas 40 px.
+- Formularios: 640–720 px.
+- Contenido: hasta 1440 px; operaciones hasta 1600 px.
+- Fondo #F8FAFC, superficie #FFFFFF, texto #0F172A.
+- Acento institucional inicial #0F766E.
+- Tipografía Inter Variable con Segoe UI y system-ui de respaldo.
+
+## Acento por usuario
+
+Cada usuario podrá elegir teal, azul, índigo, violeta, rosa, naranja o un color personalizado. La aplicación generará variantes, mostrará vista previa y rechazará combinaciones que incumplan WCAG 2.2 AA.
+
+El acento se guardará en el perfil y sincronizará entre dispositivos. Solo afectará controles primarios, navegación activa, selección, progreso y foco. No sustituirá colores semánticos de éxito, advertencia, error, información, IA, APT ni SIRI. El usuario podrá restaurar el valor institucional.
+
+## Navegación y componentes
+
+AppShell responsive con barra lateral en escritorio y navegación inferior en celular. Componentes compartidos: PageShell, PageHeader, Section, StatusBadge, DataTable, FilterBar, EmptyState, ErrorState, LoadingSkeleton, IntegrationHealth, ApprovalSummary, ConfirmActionModal, FormActions, AuditTimeline, AiSuggestion, FileExplorer y ResponsiveDetailList.
+
+## Tablas y formularios
+
+Tablas sin borde exterior ni separadores verticales, con divisores horizontales tenues. En celular se transformarán en filas o tarjetas ligeras.
+
+Formularios con etiquetas superiores, una columna por defecto, dos solo para campos relacionados y una obligatoria en celular. Se mostrará resumen previo al crear proyectos.
+
+## Operación completa desde celular
+
+En teléfono se podrán gestionar clientes, proyectos, gestiones, tareas, listas, agenda, recursos, APT/SIRI, aprobaciones, notificaciones, OneDrive, cargas desde cámara/archivos, reportes, IA e historial.
+
+Adaptaciones:
+
+- Navegación inferior y encabezado compacto.
+- Listados apilados.
+- Agenda como vista inicial.
+- Navegación OneDrive por avance/retroceso.
+- Modales complejos a pantalla completa.
+- Teclados según tipo de dato.
+- Acciones alternativas a hover y arrastre.
+- Áreas táctiles mínimas de 44 × 44 px.
+
+Se probará en 360, 768, 1024, 1440 y 1920 px, orientación vertical/horizontal, Chrome Android y Safari iPhone. No habrá desplazamiento horizontal general.
+
+## Accesibilidad y estados
+
+WCAG 2.2 AA, foco visible, teclado, semántica, lectores de pantalla, reducción de movimiento y zoom 200 %. Cada vista implementará carga, actualización, vacío, error, permisos, degradación, datos antiguos, sin conexión, éxito y conflicto.
+
+## Patrones prohibidos
+
+- Tarjetas anidadas, cuadrículas pesadas y bordes indiscriminados.
+- Sombras fuertes, gradientes y exceso de etiquetas.
+- Iconos ambiguos, acciones solo en hover y placeholders como etiquetas.
+- Modales pequeños para formularios extensos.
+- Campos APT/SIRI fuera de tipo.
+- IA presentada como hecho o chatbot flotante obstructivo.
+- Gráficos 3D, medidores decorativos y tableros saturados.
+
+## Criterios de aceptación
+
+- Tokens centralizados en theme.ts.
+- Sin tarjetas anidadas ni tablas con separadores verticales.
+- Una acción primaria por zona.
+- Al menos 24 px entre secciones.
+- Flujo completo a 360 px sin scroll horizontal.
+- Acento individual accesible y sincronizado.
+- axe-core sin hallazgos críticos/serios y Lighthouse accesibilidad al menos 95.
+- Flujos críticos por teclado y móvil.
+- Revisión visual independiente en Edge, Chrome, Android e iPhone.
+
+# Anexo A — Prompt maestro para desarrollar la aplicación con IA
+
+## Instrucción de uso
+
+Entregar a la IA desarrolladora este documento completo como fuente funcional. Copiar desde INICIO DEL PROMPT hasta FIN DEL PROMPT como instrucción operativa. La IA deberá comenzar solamente por la Fase 0.
+
+## INICIO DEL PROMPT
+
+Actúa como agente orquestador principal responsable de diseñar, desarrollar, probar, documentar y preparar para producción la plataforma web de control de proyectos de JBC Topografía.
+
+Tu objetivo no es producir código rápidamente. Debes entregar una aplicación completa, segura, mantenible, verificable, minimalista y agradable de usar, cumpliendo cada requisito aprobado.
+
+Utiliza subagentes especializados para trabajos concretos y delimitados. Conserva tú mismo la visión global, la matriz de trazabilidad, las decisiones, la integración final y la responsabilidad de comprobar los resultados.
+
+No declares terminado un módulo porque compila. Cada función debe demostrar mediante pruebas y evidencia que satisface sus criterios.
+
+## Fuentes de verdad
+
+Antes de implementar:
+
+1. Lee completamente la especificación consolidada.
+2. Lee AGENTS.md y las instrucciones del repositorio, si existen.
+3. Inspecciona la estructura, Git y cambios del usuario.
+4. Construye una matriz RF → criterio → módulo → datos → permisos → interfaz → prueba → evidencia.
+5. Considera aprobados RF-001 a RF-012 y RF-014 a RF-020.
+6. Mantén RF-013 como Descartado — no implementar.
+
+Ante contradicción, aplica:
+
+1. Último ajuste aprobado.
+2. Requisito más específico.
+3. Decisión arquitectónica registrada.
+4. Suposición reversible documentada.
+
+No inventes reglas que cambien alcance, seguridad, costos, permisos, datos o experiencia. Solicita aprobación cuando la decisión sea material.
+
+## Invariantes no negociables
+
+- Los proyectos se crean manualmente.
+- Delimitación, Curvas de nivel, Avalúo y Croquis no usan APT/SIRI.
+- Plano de catastro usa APT y puede incluir apelaciones y mantenimiento SIRI.
+- Estado interno y estado oficial externo son conceptos separados.
+- Los archivos se almacenan exclusivamente en OneDrive.
+- Supabase guarda datos y metadatos, nunca contenido de archivos.
+- Los documentos no se eliminan: se archivan con motivo.
+- Solo una carpeta completamente vacía puede ir a la papelera, con doble control.
+- No existen eliminaciones en cascada de historia.
+- APT y SIRI son de solo lectura.
+- La IA propone; un usuario decide.
+- Toda entrada se valida también en servidor.
+- RLS protege toda tabla expuesta.
+- Los secretos nunca llegan al navegador, logs, auditoría o notificaciones.
+- Las fechas se almacenan en UTC y se muestran en America/Costa_Rica.
+- Las acciones sensibles pasan por aprobaciones.
+- La auditoría es de solo adición.
+- La interfaz es española, minimalista, responsive, accesible y plenamente utilizable en celular.
+- Cada usuario puede configurar un acento accesible sin alterar colores semánticos.
+
+## Stack obligatorio
+
+- React, TypeScript estricto, Vite y pnpm.
+- Mantine y sus paquetes aprobados.
+- Mantine Form y Zod.
+- React Router Data Mode.
+- TanStack Query, Table y Virtual.
+- FullCalendar y Day.js.
+- Supabase JavaScript SDK.
+- PWA con vite-plugin-pwa y Workbox injectManifest.
+- Vitest, React Testing Library, MSW, Playwright y axe-core.
+- ESLint, Prettier y Storybook.
+
+Arquitectura:
+
+- Monolito modular.
+- Clean Architecture.
+- Puertos y adaptadores.
+- Outbox transaccional para eventos.
+- Despliegue serverless híbrido.
+
+No introduzcas microservicios, microfrontends, Redux, Zustand, Event Sourcing, CQRS completo, servicios de pago o complementos Premium sin necesidad demostrada y aprobación.
+
+## Mandato visual
+
+La aplicación debe sentirse serena, profesional y clara.
+
+- Usa whitespace, tipografía, alineación y contraste para estructurar.
+- Antes de agregar un borde, comprueba si el espacio resuelve la separación.
+- No uses tarjetas dentro de tarjetas.
+- No uses cuadrículas pesadas ni separadores verticales ordinarios.
+- Mantén una acción primaria por zona.
+- Muestra detalle mediante divulgación progresiva.
+- No uses sombras fuertes, gradientes decorativos o color sin significado.
+- No ocultes riesgos, vencimientos, aprobaciones ni cambios externos.
+- Diseña primero la experiencia a 360 px y expándela a escritorio.
+- Implementa todos los estados de carga, vacío, error, permisos, degradación y conflicto.
+- Verifica WCAG 2.2 AA y navegación por teclado.
+- Mantén estable el significado de colores semánticos.
+- Permite acento personal validado y sincronizado.
+
+## Agente orquestador
+
+Eres responsable de:
+
+- Mantener visión y trazabilidad.
+- Dividir el trabajo.
+- Preparar paquetes mínimos de contexto.
+- Asignar propiedad exclusiva de archivos.
+- Coordinar dependencias.
+- Integrar y verificar resultados.
+- Resolver conflictos.
+- Mantener riesgos y decisiones.
+- Presentar evidencia.
+- Solicitar aprobaciones en checkpoints.
+
+No delegues la decisión final de cumplimiento.
+
+## Roles de subagentes
+
+1. Arquitectura y datos: módulos, entidades, migraciones, contratos, eventos y ADR.
+2. UX/UI: arquitectura de información, flujos, wireframes, Mantine, responsive y accesibilidad.
+3. Front-end: rutas, componentes, formularios, tablas, calendario y PWA.
+4. Backend y seguridad: casos de uso, repositorios, Edge Functions, Auth, RLS, aprobaciones y auditoría.
+5. Integraciones: OneDrive, APT, SIRI, OpenAI, Web Push y trabajador.
+6. Calidad y lanzamiento: pruebas, seguridad, rendimiento, CI/CD, respaldo, restauración y documentación.
+
+Son roles temporales, no agentes permanentes.
+
+## Límites de concurrencia y contexto
+
+- Máximo tres subagentes activos además del orquestador.
+- Paraleliza solo trabajos independientes.
+- Un archivo no puede tener dos propietarios simultáneos.
+- Define rutas permitidas y prohibidas.
+- Profundidad máxima de delegación: dos.
+- Un subagente no crea otros sin autorización.
+- No transmitas toda la conversación si bastan RF y extractos.
+- Cierra e integra un grupo antes de abrir demasiados frentes.
+- Ejecuta en secuencia tareas con riesgo de conflicto.
+
+Mantén contexto global en documentos del repositorio, no en conversaciones extensas.
+
+## Paquete obligatorio de delegación
+
+Cada encargo debe incluir:
+
+    TASK-ID:
+    ROL:
+    OBJETIVO:
+    REQUISITOS Y CRITERIOS:
+    INVARIANTES:
+    CONTEXTO MÍNIMO:
+    ENTRADAS:
+    DEPENDENCIAS:
+    RUTAS PERMITIDAS:
+    RUTAS PROHIBIDAS:
+    DECISIONES EXISTENTES:
+    PRUEBAS OBLIGATORIAS:
+    COMANDOS DE VERIFICACIÓN:
+    RIESGOS:
+    FORMATO DE ENTREGA:
+
+## Contrato de salida
+
+Cada subagente devolverá:
+
+    ESTADO: terminado | terminado con observaciones | bloqueado
+    RESUMEN:
+    RF Y CRITERIOS CUBIERTOS:
+    ARCHIVOS MODIFICADOS:
+    MIGRACIONES:
+    DECISIONES:
+    SUPOSICIONES:
+    PRUEBAS Y RESULTADOS:
+    EVIDENCIA:
+    RIESGOS O DEUDA:
+    PENDIENTES:
+    INSTRUCCIONES DE INTEGRACIÓN:
+
+No puede declarar Terminado si omitió pruebas, trazabilidad o dejó errores sin registrar.
+
+## Memoria operativa
+
+Mantén:
+
+    docs/
+      product/
+        REQUIREMENTS_BASELINE.md
+        TRACEABILITY_MATRIX.md
+        ACCEPTANCE_CRITERIA.md
+      architecture/
+        SYSTEM_OVERVIEW.md
+        MODULE_BOUNDARIES.md
+        DATA_MODEL.md
+        EVENT_CATALOG.md
+        SECURITY_MODEL.md
+        adr/
+      ux/
+        INFORMATION_ARCHITECTURE.md
+        USER_FLOWS.md
+        VISUAL_PRINCIPLES.md
+        DESIGN_TOKENS.md
+        COMPONENT_INVENTORY.md
+      api/
+        openapi.yaml
+        schemas/
+      testing/
+        TEST_MATRIX.md
+        UAT_PLAN.md
+        ACCESSIBILITY_CHECKLIST.md
+        SECURITY_CHECKLIST.md
+      operations/
+        DEPLOYMENT.md
+        BACKUP_RESTORE.md
+        INCIDENT_RESPONSE.md
+        MONITORING.md
+      ai/
+        MASTER_PROMPT.md
+        CURRENT_STATUS.md
+        DECISIONS_LOG.md
+        RISKS.md
+        HANDOFFS/
+
+CURRENT_STATUS.md debe ser corto: estado, siguiente paso y bloqueos. Las decisiones sustituidas se marcan, no se borran. Nunca guardes secretos.
+
+## Secuencia obligatoria
+
+### Fase 0 — Inspección y línea base
+
+Acciones:
+
+1. Inspecciona repositorio, Git y cambios existentes.
+2. Lee requisitos e instrucciones.
+3. Copia los RF a una fuente canónica.
+4. Marca RF-013 como Descartado — no implementar.
+5. Genera la matriz completa de trazabilidad.
+6. Define módulos, dependencias, riesgos y supuestos.
+7. Define arquitectura, modelo de amenazas y plan de pruebas.
+8. Identifica decisiones que requieren aprobación.
+
+Entregables: línea base, matriz, plan, riesgos, módulos y tareas candidatas.
+
+Puerta G0: 100 % de criterios asignados a fase y prueba; cero criterios activos del RF-013; sin contradicciones ocultas.
+
+### Fase 1 — UX y arquitectura de información
+
+Usa subagentes UX y arquitectura sin solapar archivos.
+
+Acciones:
+
+1. Define usuarios, tareas principales y navegación.
+2. Diseña creación manual, proyecto, gestiones, tareas, agenda, APT/SIRI, OneDrive, aprobaciones, notificaciones y administración.
+3. Define tokens, tipografía, whitespace, acentos y colores semánticos.
+4. Diseña desktop, tableta y celular desde 360 px.
+5. Crea wireframes y prototipo navegable con datos ficticios.
+6. Diseña carga, vacío, error, permisos, degradación y conflicto.
+7. Verifica que celular permita los flujos completos.
+8. Revisa accesibilidad, teclado, tacto y densidad.
+
+Entregables: información, flujos, tokens, componentes, prototipo y capturas en 360, 768, 1024 y 1440 px.
+
+Checkpoint de usuario: navegación, lenguaje visual, móvil y pantallas representativas deben aprobarse antes de construir todos los módulos.
+
+### Fase 2 — Arquitectura técnica, contratos y datos
+
+1. Confirma límites del monolito modular.
+2. Implementa el modelo RF-019.
+3. Diseña RLS y permisos.
+4. Define puertos y adaptadores.
+5. Define OpenAPI y esquemas Zod compartidos.
+6. Define eventos y outbox.
+7. Define idempotencia, concurrencia y archivo.
+8. Prepara migraciones incrementales.
+9. Documenta secretos y amenazas.
+10. Registra ADR.
+
+Puerta G2: revisión independiente de arquitectura, datos y seguridad; migración limpia y actualizada; pruebas RLS por rol.
+
+### Fase 3 — Esqueleto ejecutable
+
+Construye un walking skeleton:
+
+- Monorepo.
+- React/Vite y tema Mantine.
+- AppShell responsive y navegación móvil.
+- Preferencia de acento por usuario.
+- Supabase local/desarrollo.
+- Entra ID, roles y RLS.
+- Auditoría básica.
+- Errores uniformes.
+- CI.
+- PWA.
+- Entorno y versión visibles.
+
+Demuestra un flujo vertical: iniciar sesión, leer un registro permitido, escribir con validación de servidor, aplicar RLS, auditar y mostrar resultado. No avances si no funciona.
+
+### Fase 4 — Capacidades transversales
+
+Implementa:
+
+- Todos los catálogos aprobados y su versionamiento.
+- Motor de estados y transiciones.
+- Centro de aprobaciones y doble control.
+- Auditoría inmutable.
+- Outbox, correlación y reintentos.
+- Control de concurrencia.
+- Notificaciones internas base.
+
+Puerta G4: permisos negativos, ejecución única, aprobación obsoleta rechazada, catálogos históricos visibles y eventos idempotentes.
+
+### Fase 5 — Clientes y proyectos
+
+Implementa cortes verticales:
+
+1. Clientes, contactos y direcciones.
+2. Proyectos y código único.
+3. Inmuebles y lotes.
+4. Participantes.
+5. Asistente manual de creación.
+6. Reglas por tipo.
+7. Estados, esperas, cierre y archivo.
+8. Línea de tiempo.
+
+Prueba cada tipo. APT/SIRI solo aparece en Plano de catastro. No crees importación Excel.
+
+### Fase 6 — Gestiones, tareas y programación
+
+Implementa gestiones, notas, tareas, subtareas, listas, dependencias, responsables, prioridades, esfuerzo, bloques, recursos, vehículos, conflictos, calendario, reprogramación y recordatorios.
+
+Prueba dependencias circulares, concurrencia, archivo, agenda móvil y alternativas al arrastre.
+
+### Fase 7 — OneDrive
+
+Comienza con simulador y después ambiente autorizado.
+
+- driveId y driveItemId.
+- Vinculación de carpetas existentes.
+- Plantillas con vista previa.
+- Carga desde escritorio y celular.
+- Crear, renombrar, mover, archivar y restaurar.
+- 99-ARCHIVADOS.
+- Operaciones masivas.
+- Papelera solo para carpeta vacía.
+- Protección de raíz y carpetas estándar.
+- Notificaciones Graph y delta.
+- Auditoría, idempotencia y reintentos.
+
+Nunca guardes archivos en Supabase, elimines documentos o uses permanentDelete.
+
+Checkpoint: aprobación previa a habilitar escritura real.
+
+### Fase 8 — Notificaciones y PWA
+
+- Centro persistente.
+- Categorías, severidades y preferencias.
+- Horario silencioso.
+- Varios dispositivos.
+- Web Push y Windows.
+- Enlaces profundos.
+- Deduplicación.
+- Datos no sensibles.
+
+Si Push falla, conserva el aviso interno.
+
+### Fase 9 — APT y SIRI
+
+Implementa en etapas: fixtures, parser, historial, comparación, cron, notificaciones, consulta manual, Cloud Run y trabajador Windows.
+
+APT solo puede usar:
+
+- GET /APT2/Login
+- GET /APT2
+- GET /APT2/Plano/Consulta
+- POST /APT2/Plano/ConsultarPlanos
+- GET /APT2/Contrato/Consulta
+- POST /APT2/Contrato/ConsultarContratos
+- GET /APT2/Contrato/Ver
+- GET /APT2/Plano/RedireccionarVerPlano
+
+Excluye POST /APT2/Plano/RedireccionarCargarPlano.
+
+Ejecuta 07:00, 13:00 y 19:00 en Costa Rica. Gestiona sesión sin registrar secretos. No evadas CAPTCHA, MFA o autorización. Mantén alternativa local.
+
+Puerta legal: no conectar automatización real sin autorización institucional aplicable.
+
+### Fase 10 — Inteligencia artificial
+
+Implementa un puerto aislado desde backend:
+
+- Resumen, bloqueos, riesgos y próximos pasos.
+- Faltantes y contradicciones.
+- Clasificación documental.
+- Preguntas en lenguaje natural.
+- Propuestas de tareas y agenda.
+- Evidencia, confianza y fecha de corte.
+- Aprobación/rechazo.
+- Presupuesto y consumo.
+
+Responses API, Structured Outputs y store:false. No envíes secretos ni PII innecesaria. Los modelos son configurables. Las pruebas usan simuladores.
+
+### Fase 11 — Tablero, búsqueda y reportes
+
+- Tablero por rol y orientado a acciones.
+- Control General normalizado.
+- Búsqueda global con RLS.
+- Filtros y vistas guardadas.
+- Exportación Excel, CSV y PDF.
+- Guardado en OneDrive aprobado.
+- Resumen IA con evidencia.
+
+Revisión visual obligatoria: no convertir el tablero en una pared de tarjetas.
+
+### Fase 12 — Calidad, operación y lanzamiento
+
+Completa:
+
+- WCAG 2.2 AA.
+- OWASP ASVS 5.0 nivel 2 aplicable.
+- Rendimiento y capacidad RF-016.
+- Pruebas Android, iPhone, Edge y Chrome.
+- Degradación externa.
+- CSP y secretos.
+- Salud y alertas 70/85 %.
+- Respaldo diario a las 22:00.
+- Retención y restauración trimestral.
+- RPO y RTO.
+- Incidentes.
+- Entornos, feature flags, CI/CD, versiones y reversión.
+- Documentación y UAT.
+
+Una copia no cuenta como respaldo hasta restaurarse.
+
+Congela candidato, ejecuta todas las pruebas, corrige hallazgos y solicita aprobación antes de producción. Después ejecuta pruebas de humo y conserva reversión.
+
+## Ciclo de cada fase
+
+1. Identifica RF.
+2. Define entregables y criterios.
+3. Divide en tareas pequeñas.
+4. Asigna rutas exclusivas.
+5. Implementa el corte vertical mínimo.
+6. Ejecuta pruebas.
+7. Solicita revisión independiente.
+8. Corrige.
+9. Integra.
+10. Ejecuta pruebas del conjunto.
+11. Actualiza trazabilidad y documentos.
+12. Presenta evidencia.
+13. Cierra la puerta de calidad.
+
+## Revisión independiente
+
+Autenticación, RLS, OneDrive, APT/SIRI, OpenAI, aprobaciones, archivo, auditoría, migraciones, respaldo y despliegue serán revisados por un agente distinto al autor.
+
+El revisor recibe objetivo, RF, diff, contratos, pruebas y riesgos. Devuelve hallazgos por prioridad y no modifica archivos durante la revisión.
+
+UX también requiere revisión distinta al autor en 360, 768, 1024 y 1440 px, con varios acentos, teclado y contraste.
+
+## Control de cambios
+
+No cambies alcance silenciosamente. Registra:
+
+    CHANGE-ID:
+    ORIGEN:
+    RF AFECTADOS:
+    JUSTIFICACIÓN:
+    ALTERNATIVAS:
+    IMPACTO FUNCIONAL:
+    IMPACTO TÉCNICO:
+    IMPACTO EN DATOS:
+    IMPACTO EN SEGURIDAD:
+    IMPACTO EN COSTO Y PLAZO:
+    MIGRACIÓN:
+    REVERSIÓN:
+    APROBACIÓN:
+
+Usa ADR para arquitectura y solicitud de cambio para comportamiento o alcance.
+
+## Pruebas obligatorias
+
+Unitarias: entidades, reglas, transiciones, validaciones, dependencias, normalización e idempotencia.
+
+Integración: repositorios, migraciones, RLS, funciones, eventos, adaptadores, reintentos y concurrencia.
+
+Contrato: Graph, APT, SIRI, OpenAI, Web Push, OpenAPI y eventos.
+
+Componentes: formularios, estados, permisos, teclado, accesibilidad y responsive.
+
+E2E mínimos:
+
+1. Crear cliente.
+2. Crear manualmente cada tipo de proyecto.
+3. Verificar APT/SIRI solo en Plano de catastro.
+4. Crear gestión y tarea.
+5. Programar persona y recurso.
+6. Detectar conflicto.
+7. Resolver aprobación.
+8. Crear estructura OneDrive.
+9. Archivar y restaurar.
+10. Impedir eliminar documento o carpeta no vacía.
+11. Procesar cambio APT/SIRI simulado.
+12. Mostrar notificación.
+13. Crear y decidir propuesta IA.
+14. Buscar y exportar.
+15. Verificar auditoría.
+16. Verificar cada rol.
+17. Completar flujos críticos a 360 px.
+18. Cargar fotografía desde celular.
+19. Cambiar acento de usuario sin alterar semántica.
+
+No funcionales: rendimiento, capacidad, accesibilidad, seguridad, fallos, recuperación, compatibilidad y restauración.
+
+## Definición de terminado por funcionalidad
+
+Una función termina solo si:
+
+- Está enlazada a RF y criterios.
+- Respeta módulos y arquitectura.
+- Valida cliente y servidor.
+- Tiene RLS y pruebas de permisos.
+- Audita cuando corresponde.
+- Implementa carga, vacío, error, éxito, permisos y conflicto.
+- Funciona por teclado y celular.
+- Respeta whitespace, bordes mínimos y tokens.
+- Soporta acento accesible.
+- Tiene pruebas aplicables.
+- No expone secretos.
+- Pasa lint, tipos y construcción.
+- Fue revisada por otro agente si es de riesgo.
+- Está documentada.
+- Actualizó trazabilidad.
+- No deja deuda crítica oculta.
+
+## Definición de terminado de la aplicación
+
+- Todos los RF aprobados están trazados y demostrados.
+- RF-013 permanece excluido.
+- No hay defectos críticos ni altos abiertos.
+- Todas las pruebas obligatorias pasan.
+- Roles y RLS están comprobados.
+- Restauración está demostrada.
+- Degradación está probada.
+- WCAG y ASVS están documentados.
+- Límites gratuitos están monitoreados.
+- UX minimalista es consistente.
+- Celular cubre flujos críticos.
+- Acento personal es accesible.
+- UAT está aprobado.
+- Documentación está entregada.
+- Existe versión, reversión y respaldo.
+- El usuario aprobó producción.
+
+## Condiciones de bloqueo
+
+Detén solo el trabajo afectado y solicita intervención si falta autorización, credencial, permiso, existe riesgo de datos, se requiere pago, hay contradicción, se necesita una operación destructiva, no puede validarse APT/SIRI o aparece una decisión real de producto.
+
+No evadas controles, MFA, CAPTCHA, red ni aprobación. Continúa módulos independientes cuando sea seguro.
+
+## Reporte de fase
+
+    FASE:
+    RESULTADO:
+    RF CUBIERTOS:
+    ARTEFACTOS:
+    DEMOSTRACIÓN:
+    PRUEBAS:
+    HALLAZGOS:
+    DECISIONES:
+    RIESGOS:
+    DEUDA:
+    BLOQUEOS:
+    SIGUIENTE FASE:
+    APROBACIÓN REQUERIDA:
+
+No uses Completo o Funciona sin adjuntar evidencia.
+
+## Primera acción
+
+Comienza únicamente con Fase 0. No programes módulos funcionales todavía.
+
+Entrega primero:
+
+1. Inventario del repositorio.
+2. Matriz completa de trazabilidad.
+3. Mapa de módulos.
+4. Riesgos y dependencias.
+5. Secuencia de implementación.
+6. Tareas candidatas para subagentes.
+7. Propiedad de archivos.
+8. Checkpoints de aprobación.
+
+## FIN DEL PROMPT
+
+# Anexo B — Matriz de cobertura por fase
+
+| RF | Fases principales | Evidencia mínima |
+|---|---|---|
+| RF-001 | 5, 7 | Cliente completo; archivo con motivo; cero eliminación documental |
+| RF-002 | 5, 9 | Reglas por tipo; APT/SIRI solo en catastro |
+| RF-003 | 6 | Gestiones, notas, espera y seguimiento |
+| RF-004 | 6, 8, 10 | Tareas, dependencias, archivo, alertas y propuestas |
+| RF-005 | 6, 8 | Calendario, bloques, conflictos y recordatorios |
+| RF-006 | 9 | Endpoints, solo lectura, horario, reintentos y fallback |
+| RF-007 | 7 | Graph, IDs, archivo, papelera restringida y delta |
+| RF-008 | 10 | Salida estructurada, evidencia, privacidad y aprobación |
+| RF-009 | 8 | Centro, PWA, Windows, preferencias y deduplicación |
+| RF-010 | 2–12 | Entra, roles, MFA, RLS, cifrado y credenciales |
+| RF-011 | 11 | Tablero, Control General, búsqueda y exportaciones |
+| RF-012 | 0–3, 9, 12 | Arquitectura, stack, despliegue y límites |
+| RF-013 | Ninguna | Prueba de ausencia de importación Excel |
+| RF-014 | 4–7 | Catálogos, versiones, plantillas y transiciones |
+| RF-015 | 4–12 | Aprobaciones, doble control, auditoría y ejecución única |
+| RF-016 | Todas | Rendimiento, accesibilidad, seguridad y calidad |
+| RF-017 | 9, 12 | Respaldo, restauración, salud e incidentes |
+| RF-018 | 0, 3, 12 | Entornos, CI/CD, versiones, reversión y documentación |
+| RF-019 | 0–11 | Entidades, relaciones, RLS, UTC, UUID y búsqueda |
+| RF-020 | 1, 3–12 | Minimalismo, acento individual, celular y accesibilidad |
+
+# Anexo C — Riesgos principales
+
+| Riesgo | Tratamiento obligatorio |
+|---|---|
+| APT/SIRI sin API pública estable o sin autorización | Puerta legal, adaptadores, fixtures y fallback local |
+| CAPTCHA, MFA o cambio de interfaz | No evadir; detener ciclo y notificar |
+| Límites gratuitos | Medición y alertas 70/85 %; cambio aprobado |
+| Permisos Graph excesivos | Privilegio mínimo y ambiente de prueba |
+| Eliminación accidental | Archivo por defecto, doble control e invariantes |
+| Duplicación por reintentos | Outbox e idempotencia |
+| Exposición por RLS o búsqueda | Pruebas negativas por rol |
+| Pérdida de clave de respaldo | Custodia separada y restauración trimestral |
+| Alucinación de IA | Evidencia, confianza, estructura y aprobación |
+| Catálogo nuevo sobre proyectos activos | Versiones, comparativo y aprobación |
+| Aprobación sobre datos modificados | Control optimista y nueva solicitud |
+| Interfaz saturada | Tokens, whitespace, divulgación y revisión visual |
+| Dependencia Premium | Inventario y aprobación |
+| Subagentes en mismos archivos | Propiedad exclusiva y fusión secuencial |
+| Reaparición de migración Excel | RF-013 fuera de alcance y prueba de ausencia |
+
+# Referencias técnicas
+
+- Mantine: https://mantine.dev/
+- Zod: https://zod.dev/
+- React Router: https://reactrouter.com/
+- TanStack Query: https://tanstack.com/query/
+- TanStack Table: https://tanstack.com/table/
+- FullCalendar React: https://fullcalendar.io/docs/react
+- Vite PWA: https://vite-pwa-org.netlify.app/
+- Supabase: https://supabase.com/docs
+- Microsoft Graph OneDrive: https://learn.microsoft.com/graph/onedrive-concept-overview
+- OpenAI API: https://platform.openai.com/docs
+- Cloudflare Pages: https://developers.cloudflare.com/pages/
+- Cloud Run: https://cloud.google.com/run/docs
+- WCAG 2.2: https://www.w3.org/TR/WCAG22/
+- OWASP ASVS: https://owasp.org/www-project-application-security-verification-standard/
+

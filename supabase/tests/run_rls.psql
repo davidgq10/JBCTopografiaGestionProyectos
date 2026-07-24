@@ -1,0 +1,16 @@
+\set ON_ERROR_STOP on
+\pset pager off
+
+\if :{?dec_0103_approved}
+\else
+  \set dec_0103_approved '0'
+\endif
+
+begin;
+\ir 00_surface_manifest.sql
+\ir 10_rls_structure.sql
+select set_config('rls_test.dec_0103_approved', :'dec_0103_approved', true);
+\ir 30_case_data.sql
+\ir 20_rls_matrix.sql
+rollback;
+

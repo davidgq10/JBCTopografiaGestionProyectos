@@ -1,0 +1,15 @@
+node_modules/
+.pnpm-store/
+.agents/
+.codex/
+dist/
+coverage/
+storybook-static/
+playwright-report/
+test-results/
+.env
+.env.local
+.env.*.local
+supabase/.temp/
+apps/web/public/sw.js
+apps/web/public/workbox-*.js

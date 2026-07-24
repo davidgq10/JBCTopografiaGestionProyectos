@@ -1,0 +1,14 @@
+.pnpm-store
+node_modules
+dist
+coverage
+storybook-static
+playwright-report
+test-results
+docs/testing/evidence/**/*.json
+docs/testing/evidence/**/*.txt
+docs/testing/evidence/**/*.sql
+supabase/migrations/*.sql
+supabase/tests/*.sql
+supabase/tests/*.psql
+prototypes/fase1

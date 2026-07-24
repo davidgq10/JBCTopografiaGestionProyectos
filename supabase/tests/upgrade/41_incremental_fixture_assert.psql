@@ -1,0 +1,24 @@
+\set ON_ERROR_STOP on
+\pset pager off
+
+do $assert_incremental_fixture$
+begin
+  if not exists (
+    select 1
+    from public.projects p
+    join public.works w on w.project_id = p.id
+    where p.id = '7e000000-0000-4000-8000-000000000004'
+      and p.internal_code = 'R3-INCREMENTAL'
+      and p.name = 'Contratación incremental R3'
+      and p.version = 1
+      and w.id = '7e000000-0000-4000-8000-000000000005'
+      and w.name = 'Trabajo incremental R3'
+      and w.version = 1
+  ) then
+    raise exception 'FAIL [fixture incremental 01→02→03→17]';
+  end if;
+  raise notice 'PASS [fixture incremental conservado con version=1]';
+end;
+$assert_incremental_fixture$;
+
+select 'F2-INCREMENTAL-FIXTURE-FINAL PASS' as result;

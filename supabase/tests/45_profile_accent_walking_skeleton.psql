@@ -1,0 +1,140 @@
+\set ON_ERROR_STOP on
+\pset pager off
+
+begin;
+\ir 00_surface_manifest.sql
+select set_config('rls_test.dec_0103_approved', '1', true);
+\ir 30_case_data.sql
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"b1000000-0000-4000-8000-000000000003","role":"authenticated","aal":"aal2"}',
+  true
+);
+
+do $test$
+declare
+  own_count integer;
+  other_count integer;
+  updated_count integer;
+begin
+  select count(*) into own_count
+  from public.app_users
+  where id = 'a1000000-0000-4000-8000-000000000003';
+  if own_count <> 1 then
+    raise exception 'F3-ACCENT FAIL: el perfil propio no se puede leer';
+  end if;
+
+  select count(*) into other_count
+  from public.app_users
+  where id = 'a1000000-0000-4000-8000-000000000002';
+  if other_count <> 0 then
+    raise exception 'F3-ACCENT FAIL: RLS reveló un perfil ajeno';
+  end if;
+
+  update public.app_users
+  set preferred_accent = '#0f766e', preferred_theme = 'dark'
+  where id = 'a1000000-0000-4000-8000-000000000003'
+    and version = 1;
+  get diagnostics updated_count = row_count;
+  if updated_count <> 1 then
+    raise exception 'F3-ACCENT FAIL: la actualización autorizada no afectó una fila';
+  end if;
+
+  update public.app_users
+  set preferred_accent = 'azul'
+  where id = 'a1000000-0000-4000-8000-000000000002';
+  get diagnostics updated_count = row_count;
+  if updated_count <> 0 then
+    raise exception 'F3-ACCENT FAIL: RLS permitió actualizar un perfil ajeno';
+  end if;
+
+  begin
+    update public.app_users
+    set preferred_accent = '#FFFFFF'
+    where id = 'a1000000-0000-4000-8000-000000000003';
+    raise exception 'F3-ACCENT FAIL: el servidor aceptó contraste insuficiente';
+  exception
+    when check_violation then null;
+  end;
+
+  begin
+    update public.app_users
+    set email = 'manipulado@example.test'
+    where id = 'a1000000-0000-4000-8000-000000000003';
+    raise exception 'F3-ACCENT FAIL: el cliente alteró una columna de identidad';
+  exception
+    when insufficient_privilege then null;
+  end;
+end;
+$test$;
+
+reset role;
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"b1000000-0000-4000-8000-000000000001","role":"authenticated","aal":"aal2"}',
+  true
+);
+
+do $admin_version$
+declare
+  returned_version bigint;
+begin
+  update public.app_users
+  set preferred_accent = 'azul'
+  where id = 'a1000000-0000-4000-8000-000000000001'
+    and version = 1
+  returning version into returned_version;
+
+  if returned_version <> 2 then
+    raise exception 'F3-ACCENT FAIL: el perfil propio Administrador no incrementó versión';
+  end if;
+end;
+$admin_version$;
+
+reset role;
+
+do $audit$
+declare
+  audit_count integer;
+  admin_audit_count integer;
+  stored_accent text;
+begin
+  select preferred_accent into stored_accent
+  from public.app_users
+  where id = 'a1000000-0000-4000-8000-000000000003';
+  if stored_accent <> '#0F766E' then
+    raise exception 'F3-ACCENT FAIL: el servidor no normalizó el color';
+  end if;
+
+  if (select preferred_theme from public.app_users
+      where id = 'a1000000-0000-4000-8000-000000000003') <> 'dark' then
+    raise exception 'F3-ACCENT FAIL: el servidor no sincronizó el tema';
+  end if;
+
+  select count(*) into audit_count
+  from public.audit_events
+  where entity_id = 'a1000000-0000-4000-8000-000000000003'
+    and action_code = 'profile.appearance_updated'
+    and actor_user_id = 'a1000000-0000-4000-8000-000000000003';
+  if audit_count <> 1 then
+    raise exception 'F3-ACCENT FAIL: la auditoría transaccional no contiene exactamente un evento';
+  end if;
+
+  select count(*) into admin_audit_count
+  from public.audit_events
+  where entity_id = 'a1000000-0000-4000-8000-000000000001'
+    and action_code = 'profile.appearance_updated'
+    and actor_user_id = 'a1000000-0000-4000-8000-000000000001'
+    and actor_role_code = 'administrator';
+  if admin_audit_count <> 1 then
+    raise exception 'F3-ACCENT FAIL: la auditoría no conserva el rol Administrador';
+  end if;
+end;
+$audit$;
+
+\echo 'F3-ACCENT PASS | login claims -> RLS read -> validated write -> append-only audit'
+rollback;
