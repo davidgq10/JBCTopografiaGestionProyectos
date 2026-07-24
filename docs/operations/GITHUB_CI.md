@@ -26,6 +26,8 @@ Los pull requests y cambios a `Main` ejecutan:
 
 Dependabot revisa semanalmente paquetes pnpm y GitHub Actions. Las actualizaciones menores y parches se agrupan; ninguna actualización se integra automáticamente.
 
+El gráfico de dependencias está habilitado para que `actions/dependency-review-action@v5` pueda comparar el inventario del pull request. La política falla ante vulnerabilidades nuevas altas o críticas.
+
 ## Protección aprobada para `Main`
 
 - pull request obligatorio con una aprobación;
