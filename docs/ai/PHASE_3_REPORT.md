@@ -28,9 +28,9 @@ Detalle: [evidencia F03](../testing/evidence/F03/README.md).
 
 ## Límites y bloqueos correctos
 
-R3 independiente mantiene un P1: UI y PostgreSQL pasan sus pruebas por separado, pero falta un único recorrido UI → Supabase/PostgREST → PostgreSQL → RLS/auditoría → respuesta visible. El E2E no se presenta como prueba de auditoría y G3 permanece en NO-GO hasta incorporar esa integración.
+R3 independiente registró un P1 porque UI y PostgreSQL pasaban por separado. La corrección posterior incorporó `pnpm verify:connected`: un navegador real lee y escribe por PostgREST 14.12, RLS limita la lectura al perfil propio, la UI confirma la operación y PostgreSQL demuestra versión y auditoría. El hallazgo requiere un dictamen independiente actualizado antes de considerarse cerrado para G3.
 
-`DEC-0209` fue aprobada el 2026-07-24 para GitHub Actions, repositorio `davidgq10/JBCTopografia_GestionProyectos.git` y rama `Main`. El pipeline y la política quedaron versionables; su publicación y la protección remota requieren autenticación administrativa del propietario.
+`DEC-0209` quedó implementada el 2026-07-24 en `davidgq10/JBCTopografiaGestionProyectos`: `Main` es la rama predeterminada y protegida, y la primera ejecución alojada pasó los jobs `Quality` y `Database`. La revisión de dependencias se ejecuta en pull requests y se promueve a check requerido tras su primer registro en GitHub.
 
 La integración Entra está implementada y cerrada por defecto, pero tenant, MFA, allowlist y revocación no se han validado contra un ambiente real porque no se proporcionaron credenciales ni autorización. Los simuladores y PostgreSQL prueban el contrato; no sustituyen esa validación.
 
@@ -38,4 +38,4 @@ El bundle principal emite una advertencia de tamaño (~799 kB sin comprimir). No
 
 ## Dictamen
 
-La base ejecutable está construida y sus capas pasan por separado. Fase 3 permanece activa en **NO-GO** y G3 no debe presentarse hasta demostrar el recorrido conectado, publicar y proteger el destino aprobado en `DEC-0209`, validar Entra en un ambiente autorizado, obtener revisión sin P0/P1 y recibir aprobación explícita del usuario.
+La base ejecutable y el recorrido conectado están construidos. Fase 3 permanece activa en **NO-GO** y G3 no debe presentarse hasta validar Entra en un ambiente autorizado, obtener revisión sin P0/P1, cerrar el P2 restante y recibir aprobación explícita del usuario. El frente GitHub/CI de `DEC-0209` está cerrado.

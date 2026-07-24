@@ -1,14 +1,18 @@
 # Integración continua en GitHub
 
-Estado: **proveedor y política aprobados el 2026-07-24; publicación y protección remota pendientes de credencial administrativa**.
+Estado: **publicado y protegido el 2026-07-24**.
 
 ## Destino aprobado
 
 - proveedor: GitHub Actions;
-- repositorio: `davidgq10/JBCTopografia_GestionProyectos.git`;
+- repositorio: `https://github.com/davidgq10/JBCTopografiaGestionProyectos`;
 - rama principal: `Main`;
 - Node.js 24, pnpm 11.9, Chromium y PostgreSQL 17 efímero;
 - ningún secreto de aplicación, Entra o producción es necesario para el pipeline base.
+
+La rama `Main` es la rama predeterminada. El commit inicial de Fase 3 es
+`a93d0dac1eedced649d0eb5d7041adb52fa23f23` y su primera ejecución alojada
+finalizó correctamente en [GitHub Actions #30112463543](https://github.com/davidgq10/JBCTopografiaGestionProyectos/actions/runs/30112463543).
 
 ## Controles obligatorios
 
@@ -17,9 +21,12 @@ Los pull requests y cambios a `Main` ejecutan:
 1. instalación con lockfile inmutable;
 2. `pnpm verify:ci` en el job `CI / Quality`;
 3. migración limpia, estructura, RLS 2561/2561 y walking skeleton mediante `pnpm verify:database` en `CI / Database`;
-4. revisión de cambios de dependencias, bloqueando vulnerabilidades altas o críticas.
+4. recorrido conectado con Chromium, PostgREST 14.12, PostgreSQL 17, RLS y auditoría mediante `pnpm verify:connected` en `CI / Connected integration`;
+5. revisión de cambios de dependencias, bloqueando vulnerabilidades altas o críticas.
 
 Dependabot revisa semanalmente paquetes pnpm y GitHub Actions. Las actualizaciones menores y parches se agrupan; ninguna actualización se integra automáticamente.
+
+El gráfico de dependencias está habilitado para que `actions/dependency-review-action@v5` pueda comparar el inventario del pull request. La política falla ante vulnerabilidades nuevas altas o críticas.
 
 ## Protección aprobada para `Main`
 
@@ -27,9 +34,9 @@ Dependabot revisa semanalmente paquetes pnpm y GitHub Actions. Las actualizacion
 - descartar aprobaciones cuando cambie el código;
 - resolver todas las conversaciones;
 - exigir rama actualizada antes de integrar;
-- checks requeridos: `CI / Quality`, `CI / Database` y `Dependency review / Dependency review` cuando exista un pull request;
+- checks requeridos: `Quality`, `Database`, `Connected integration` y `Dependency review`;
 - impedir force-push y eliminación de `Main`;
 - aplicar las reglas también a administradores;
 - historial lineal y sin bypass ordinario.
 
-La publicación del repositorio, cambios de configuración remota y reglas de protección requieren autenticación GitHub del propietario o un token temporal con permisos mínimos. No guardar el token en archivos, historial, logs ni documentación.
+Los cambios posteriores de configuración remota y reglas de protección requieren autenticación GitHub del propietario o un token temporal con permisos mínimos. No guardar el token en archivos, historial, logs ni documentación.

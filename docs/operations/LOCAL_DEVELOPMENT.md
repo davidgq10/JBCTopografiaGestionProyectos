@@ -51,6 +51,14 @@ Remove-Item Env:JBC_TEST_DATABASE_URL
 
 La URL no se guarda en el repositorio ni en la evidencia. El script crea roles locales, aplica todas las migraciones, ejecuta `RLS-STRUCT`, la matriz `2561/2561` y el flujo F3 de perfil/acento/auditoría.
 
+Para demostrar el corte vertical conectado sin instalar PostgreSQL ni PostgREST en Windows:
+
+```powershell
+pnpm verify:connected
+```
+
+La orden usa Docker Desktop para levantar PostgreSQL 17 y PostgREST 14.12 efímeros, genera en memoria un JWT sintético AAL2, ejecuta Chromium y elimina los contenedores al finalizar. El token no se entrega al navegador, no se registra y no sustituye la validación Microsoft Entra.
+
 ## Contrato de integración continua
 
 GitHub Actions y la rama `Main` fueron aprobados en `DEC-0209`. El pipeline definido en `.github/workflows/` debe ejecutar en un checkout limpio:

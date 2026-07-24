@@ -19,6 +19,6 @@ Resultado: **PASS con una advertencia de tamaño no bloqueante**.
 
 El build advirtió que el chunk principal ronda 799 kB sin comprimir. No hay presupuesto de rendimiento de Fase 3 incumplido; se registra para partición por rutas antes del crecimiento funcional.
 
-La revisión de secretos valida que el cliente solo consuma valores públicos `VITE_`; `.env.example` documenta secretos de servidor únicamente sin valores reales. La inspección no reemplaza el escaneo del proveedor alojado pendiente de `DEC-0209`.
+La revisión de secretos valida que el cliente solo consuma valores públicos `VITE_`; `.env.example` documenta secretos de servidor únicamente sin valores reales. El mismo control pasó en el proveedor alojado según `F03-GITHUB-CI-2026-07-24.md`.
 
 La auditoría remota de vulnerabilidades npm no se ejecutó porque requiere autorización explícita para enviar el inventario de dependencias al registro externo. Debe formar parte del proveedor CI aprobado o de una ejecución autorizada; no se declara PASS.
