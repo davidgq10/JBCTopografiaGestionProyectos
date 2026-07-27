@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
-    "@playwright/test": "^1.50.0",
+    "@playwright/test": "^1.62.0",
     "@storybook/addon-a11y": "^9.0.0",
     "@storybook/react-vite": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
