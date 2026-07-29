@@ -39,6 +39,45 @@ test('mantiene el flujo sin desbordamiento en el viewport configurado', async ({
   await expect(page.getByRole('button', { name: 'Guardar apariencia' })).toBeVisible();
 });
 
+test('muestra Proyectos y Tareas en el menú Más del celular', async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 768, 'Este recorrido valida la navegación móvil.');
+
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Entrar con Microsoft' }).click();
+  await expect(page.getByRole('heading', { name: /Hola, María Técnica/ })).toBeVisible();
+
+  const moreButton = page.getByRole('button', { name: 'Mostrar más opciones' });
+  await expect(moreButton).toHaveAttribute('aria-expanded', 'false');
+  await expect(moreButton).toHaveAttribute('aria-controls', 'mobile-more-navigation');
+  await expect(moreButton).toHaveAttribute('aria-haspopup', 'dialog');
+  const moreBox = await moreButton.boundingBox();
+  expect(moreBox?.width ?? 0).toBeGreaterThanOrEqual(44);
+  expect(moreBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+
+  await moreButton.click();
+  const moreOptions = page.getByRole('dialog', { name: 'Más opciones' });
+  await expect(moreOptions).toBeVisible();
+  const closeButton = moreOptions.getByRole('button', { name: 'Cerrar más opciones' });
+  await expect(closeButton).toBeVisible();
+  await expect(closeButton).toBeFocused();
+  await expect(moreOptions.getByRole('link', { name: 'Proyectos' })).toBeVisible();
+  await expect(moreOptions.getByRole('link', { name: 'Tareas' })).toBeVisible();
+
+  await page.keyboard.press('Escape');
+  await expect(moreOptions).toBeHidden();
+  await expect(moreButton).toBeFocused();
+  await expect(moreButton).toHaveAttribute('aria-expanded', 'false');
+
+  const hasOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > window.innerWidth,
+  );
+  expect(hasOverflow).toBe(false);
+
+  await moreButton.click();
+  await moreOptions.getByRole('link', { name: 'Proyectos' }).click();
+  await expect(page.getByRole('heading', { name: 'Proyectos' })).toBeVisible();
+});
+
 test('abre un shell seguro sin datos ni mutaciones al quedar offline', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Entrar con Microsoft' }).click();

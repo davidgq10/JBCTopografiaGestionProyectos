@@ -4,6 +4,8 @@ Fecha: **2026-07-24 UTC / 2026-07-23 America/Costa_Rica**
 Navegador: **Chromium Playwright**  
 Resultado: **12/12 UI PASS + 1/1 PWA compilada PASS**.
 
+Este es el corte base de 2026-07-24. La navegación móvil secundaria añadida posteriormente se verifica en [F03-MOBILE-NAVIGATION-2026-07-28.md](F03-MOBILE-NAVIGATION-2026-07-28.md).
+
 ## Escenarios
 
 | Viewport/proyecto          | Flujo                                                                        | Resultado |

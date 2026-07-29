@@ -2,6 +2,7 @@ import {
   ActionIcon,
   AppShell,
   Box,
+  Drawer,
   Group,
   NavLink as MantineNavLink,
   Stack,
@@ -13,6 +14,7 @@ import {
   IconCalendar,
   IconCheckupList,
   IconClipboardText,
+  IconDotsVertical,
   IconHome,
   IconLogout,
   IconSettings,
@@ -50,6 +52,12 @@ const mobileItems: NavigationItem[] = [
   { label: 'Cuenta', to: '/perfil/apariencia', icon: IconUserCircle },
 ];
 
+const mobileMoreItems: NavigationItem[] = [
+  { label: 'Proyectos', to: '/proyectos', icon: IconClipboardText },
+  { label: 'Tareas', to: '/tareas', icon: IconCheckupList },
+  { label: 'Configuración', to: '/configuracion', icon: IconSettings },
+];
+
 function DesktopNavigationLink({ item, expanded }: { item: NavigationItem; expanded: boolean }) {
   const location = useLocation();
   const active =
@@ -66,6 +74,62 @@ function DesktopNavigationLink({ item, expanded }: { item: NavigationItem; expan
     />
   );
   return expanded ? content : <Tooltip label={item.label}>{content}</Tooltip>;
+}
+
+function MobileMoreNavigation() {
+  const [opened, setOpened] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const location = useLocation();
+  const moreActive = mobileMoreItems.some(({ to }) => location.pathname.startsWith(to));
+
+  const close = () => setOpened(false);
+
+  return (
+    <>
+      <button
+        ref={toggleRef}
+        type="button"
+        className={`mobileNavItem${moreActive ? ' active' : ''}`}
+        aria-label="Mostrar más opciones"
+        aria-controls="mobile-more-navigation"
+        aria-expanded={opened}
+        aria-haspopup="dialog"
+        onClick={() => setOpened((value) => !value)}
+      >
+        <IconDotsVertical size={20} aria-hidden="true" />
+        <span>Más</span>
+      </button>
+
+      <Drawer
+        id="mobile-more-navigation"
+        opened={opened}
+        onClose={close}
+        position="bottom"
+        size={280}
+        title="Más opciones"
+        closeButtonProps={{ 'aria-label': 'Cerrar más opciones' }}
+        returnFocus
+      >
+        <Stack gap={4} pb="xs">
+          {mobileMoreItems.map((item) => {
+            const active = location.pathname.startsWith(item.to);
+            return (
+              <MantineNavLink
+                key={item.to}
+                component={NavLink}
+                to={item.to}
+                label={item.label}
+                aria-label={item.label}
+                leftSection={<item.icon size={22} aria-hidden="true" />}
+                active={active}
+                onClick={close}
+              />
+            );
+          })}
+        </Stack>
+      </Drawer>
+    </>
+  );
 }
 
 export function AppNavigation({ content }: { content?: ReactNode }) {
@@ -182,6 +246,7 @@ export function AppNavigation({ content }: { content?: ReactNode }) {
             <span>{item.label}</span>
           </NavLink>
         ))}
+        <MobileMoreNavigation />
       </AppShell.Footer>
     </AppShell>
   );
