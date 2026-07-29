@@ -18,4 +18,7 @@ A11Y-SUPPLEMENTAL PASS | Edge desktop + WebKit iPhone emulated
 
 El script recorre el login sintético, abre Cuenta y Configuración, ejecuta axe sobre el panel móvil, comprueba foco con `Shift+Tab`/`Tab` y mide `scrollWidth` frente a `clientWidth`. Es evidencia automatizada complementaria; no equivale a una prueba física de Chrome Android, Safari iPhone, lector de pantalla ni zoom nativo del navegador al 200 %.
 
-Por lo tanto, el P2 de G3 permanece abierto hasta completar la matriz física acordada y registrar el zoom nativo 200 % en ambos temas.
+La evidencia automatizada no equivale a una prueba física de Chrome Android, Safari iPhone,
+lector de pantalla ni zoom nativo del navegador al 200 %. El usuario aceptó explícitamente este
+P2 residual y aprobó G3 el 2026-07-29; la aceptación queda registrada en
+`F03-G3-USER-APPROVAL-2026-07-29.md`.

@@ -1,6 +1,6 @@
 # Registro de decisiones y contradicciones
 
-Estado: **Fase 3 activa; G3 pendiente**. G0, CP-UX y G2 fueron aprobados el 2026-07-23. Las decisiones sustituidas se marcan; no se eliminan.
+Estado: **Fase 3 cerrada; G3 aprobado el 2026-07-29**. G0, CP-UX y G2 fueron aprobados el 2026-07-23. Las decisiones sustituidas se marcan; no se eliminan.
 
 ## Decisiones fijadas por la especificación
 

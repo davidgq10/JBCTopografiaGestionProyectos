@@ -31,5 +31,6 @@ en Más.
 - Accesibilidad suplementaria: **PASS** en Edge de escritorio y WebKit con perfil iPhone emulado;
   Configuración queda incluida en axe (0 violaciones críticas/serias), foco y overflow.
 
-La prueba física de Chrome Android, Safari iPhone, foco táctil y zoom nativo 200 % continúa siendo
-el P2 independiente de G3.
+La prueba física de Chrome Android, Safari iPhone, foco táctil y zoom nativo 200 % fue el P2
+independiente de G3. El usuario aceptó explícitamente ese P2 y aprobó G3 el 2026-07-29; la
+declaración formal se conserva en `F03-G3-USER-APPROVAL-2026-07-29.md`.

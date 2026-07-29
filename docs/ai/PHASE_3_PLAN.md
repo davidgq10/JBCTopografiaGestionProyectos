@@ -1,6 +1,6 @@
 # Plan de Fase 3 — esqueleto ejecutable
 
-Estado: **implementación integrada; R3 NO-GO por un P1 de recorrido conectado; G3 pendiente**.
+Estado: **Fase 3 cerrada; G3 aprobado por el usuario el 2026-07-29**.
 
 ## Alcance autorizado
 

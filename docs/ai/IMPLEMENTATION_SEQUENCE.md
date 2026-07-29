@@ -1,6 +1,6 @@
 # Secuencia de implementación
 
-Estado: **aprobado en G0; G0/CP-UX/G2 cerrados; Fase 3 activa y G3 pendiente; cada checkpoint requiere cierre explícito**
+Estado: **aprobado en G0; G0/CP-UX/G2/G3 cerrados; Fase 3 cerrada; cada checkpoint requiere cierre explícito**
 
 | Fase | Corte mínimo y RF dominantes                                                                                                           | Dependencias                      | Puerta/checkpoint                                                                                |
 | ---: | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------ |

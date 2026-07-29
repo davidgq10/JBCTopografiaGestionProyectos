@@ -24,3 +24,7 @@ La ejecución de `verify:database` se realizó dentro de un cliente PostgreSQL t
 El CLI de Supabase generó `.temp` y `.branches` localmente. Ambos destinos quedan fuera del lint y del control de versiones; no contienen artefactos que deban publicarse.
 
 La fila de navegación móvil es un addendum al corte base: la regresión final conserva los escenarios originales y demuestra la preferencia configurable en `F03-MOBILE-NAVIGATION-2026-07-28.md` y `F03-MOBILE-NAV-PREFERENCES-2026-07-29.md`.
+
+El usuario aprobó explícitamente el P2 residual y G3 el 2026-07-29. La aprobación de cierre está
+registrada en `F03-G3-USER-APPROVAL-2026-07-29.md`; no agrega pruebas físicas no ejecutadas a esta
+verificación automatizada.

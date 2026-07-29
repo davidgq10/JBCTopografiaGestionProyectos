@@ -2,11 +2,11 @@
 
 Actualizado: **2026-07-29 America/Costa_Rica**.
 
-- Última fase cerrada: **2 — arquitectura técnica, contratos y datos**.
-- Fase activa: **3 — esqueleto ejecutable**.
-- Estado: **implementación técnica integrada; P1 conectado y Entra QA real cerrados; G3 no presentado**.
-- Checkpoints cerrados: G0, CP-UX y G2, aprobados por el usuario el 2026-07-23.
-- Próxima fase: bloqueada hasta aprobación explícita de G3.
+- Última fase cerrada: **3 — esqueleto ejecutable**.
+- Fase activa: **ninguna; Fase 4 todavía no iniciada**.
+- Estado: **Fase 3 cerrada; P1 conectado y Entra QA real cerrados; P2 residual aceptado y G3 aprobado**.
+- Checkpoints cerrados: G0, CP-UX y G2 (2026-07-23), G3 (2026-07-29).
+- Próxima fase: disponible para preparación cuando el usuario la solicite; requiere su propio checkpoint G4.
 
 ## Corte Fase 3
 
@@ -30,14 +30,14 @@ Actualizado: **2026-07-29 America/Costa_Rica**.
 - `pnpm verify:connected` PASS: UI → PostgREST 14.12 → PostgreSQL 17 → RLS → auditoría.
 - Entra QA real PASS: tenant QA, MFA, callback `localhost`, sesión preautorizada, rol `technician` y revocación/restauración controladas.
 - Preferencia de navegación móvil PASS: Configuración, selección/orden con Inicio y Más fijos, RLS, versión y auditoría; evidencia en `F03/F03-MOBILE-NAV-PREFERENCES-2026-07-29.md`.
-- R4 independiente y seguimiento: 0 P0, 0 P1, 1 P2, 0 P3; evidencia suplementaria Edge/WebKit emulado PASS y Entra QA real PASS.
+- R4 independiente y seguimiento: 0 P0, 0 P1, 1 P2 residual aceptado explícitamente por el usuario, 0 P3; evidencia suplementaria Edge/WebKit emulado PASS y Entra QA real PASS.
 
 Fuentes: [informe F3](PHASE_3_REPORT.md) y [evidencia F03](../testing/evidence/F03/README.md).
 
-## Bloqueos de G3
+## Cierre de G3
 
-1. El P1 `F3-REV-P1-02` está cerrado técnicamente y por R4. El P2 de teclado/foco físico, zoom nativo 200 %, Chrome Android físico y Safari iPhone/iOS sigue abierto; Edge de escritorio y WebKit emulado ya tienen evidencia suplementaria.
-2. Aprobación expresa del usuario: requerida aun después de cerrar el P2 físico.
+1. El P1 `F3-REV-P1-02` está cerrado técnicamente y por R4. El P2 residual de teclado/foco físico, zoom nativo 200 %, Chrome Android físico y Safari iPhone/iOS fue aceptado explícitamente por el usuario el 2026-07-29; Edge de escritorio y WebKit emulado tienen evidencia suplementaria.
+2. La aprobación de P2 y G3 queda registrada en `docs/testing/evidence/F03/F03-G3-USER-APPROVAL-2026-07-29.md`.
 
 `DEC-0209` ya no es un bloqueo: GitHub Actions fue publicado en `davidgq10/JBCTopografiaGestionProyectos`, `Main` es predeterminada y está protegida, y la primera ejecución alojada pasó `Quality` y `Database`.
 
@@ -49,4 +49,4 @@ El bundle principal ronda 799 kB sin comprimir. Se debe dividir por rutas antes 
 
 ## Continuación
 
-No iniciar Fase 4. Seguir [F3-G3-PENDING-2026-07-24.md](HANDOFFS/F3-G3-PENDING-2026-07-24.md), resolver solo el P2 físico y presentar G3 para aprobación explícita.
+Fase 3 está cerrada. La Fase 4 no se inicia automáticamente; cuando se autorice, debe seguir su plan y preparar el checkpoint G4.

@@ -1,6 +1,6 @@
 # Registro de riesgos
 
-Estado: **Fase 3 activa; G3 pendiente**. Escala: probabilidad/impacto `B` baja, `M` media, `A` alta. Los valores son cualitativos y se revisan por fase.
+Estado: **Fase 3 cerrada; G3 aprobado el 2026-07-29**. Escala: probabilidad/impacto `B` baja, `M` media, `A` alta. Los valores son cualitativos y se revisan por fase.
 
 | ID    | Riesgo                                                   | P/I | Tratamiento obligatorio                                                                                                                  | Disparador/checkpoint | Propietario                |
 | ----- | -------------------------------------------------------- | --- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------------------------- |
@@ -37,6 +37,6 @@ Estado: **Fase 3 activa; G3 pendiente**. Escala: probabilidad/impacto `B` baja, 
 
 ## Riesgos aceptados solo temporalmente
 
-- El entorno QA Entra/Supabase ya tiene validación interactiva PASS; se conserva como entorno temporal y separado de producción. La aprobación G3 y el P2 físico siguen pendientes.
+- El entorno QA Entra/Supabase ya tiene validación interactiva PASS; se conserva como entorno temporal y separado de producción. El P2 residual y G3 fueron aceptados explícitamente por el usuario el 2026-07-29; no se autoriza reutilizar este entorno para producción.
 - `psql` no está instalado en el host, pero Docker Desktop permitió ejecutar PostgreSQL 17 de forma aislada. Las 20 migraciones, estructura, matriz RLS 2561/2561 y el walking skeleton F3 pasaron mediante el cliente temporal Docker.
 - El chunk principal ronda 799 kB sin comprimir; se acepta temporalmente para el corte mínimo y se divide antes de ampliar módulos.

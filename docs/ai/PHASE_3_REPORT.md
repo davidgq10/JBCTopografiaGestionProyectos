@@ -2,7 +2,7 @@
 
 Fecha de corte: **2026-07-29 America/Costa_Rica**
 
-Estado: **implementación técnica integrada; P1 conectado y Entra QA real cerrados; G3 no presentado**.
+Estado: **Fase 3 cerrada; G3 aprobado por el usuario el 2026-07-29**.
 
 ## Resultado
 
@@ -17,7 +17,7 @@ Estado: **implementación técnica integrada; P1 conectado y Entra QA real cerra
 - Storybook con estados del sistema y addon a11y; Vitest/Testing Library/MSW y Playwright/axe.
 - contrato de CI reproducible con `pnpm verify:ci` y `pnpm verify:database`.
 - recorrido conectado validado con `pnpm verify:connected`: UI → PostgREST 14.12 → PostgreSQL 17 → RLS → auditoría → confirmación visible;
-- accesibilidad suplementaria PASS en Edge de escritorio y WebKit con perfil iPhone emulado; la validación física continúa pendiente;
+- accesibilidad suplementaria PASS en Edge de escritorio y WebKit con perfil iPhone emulado; el P2 físico residual fue aceptado explícitamente por el usuario;
 - Microsoft Entra QA real PASS con MFA, callback `http://localhost:54321/auth/v1/callback`, sesión preautorizada, rol `technician` y revocación/restauración controladas.
 - Preferencia de navegación móvil PASS: Configuración persiste tres accesos ordenables entre Agenda, Avisos, Cuenta, Proyectos y Tareas, con Inicio/Más fijos, RLS, versión y auditoría. Evidencia: [F03-MOBILE-NAV-PREFERENCES-2026-07-29.md](../testing/evidence/F03/F03-MOBILE-NAV-PREFERENCES-2026-07-29.md).
 
@@ -33,7 +33,7 @@ Detalle: [evidencia F03](../testing/evidence/F03/README.md).
 
 ## Límites y bloqueos correctos
 
-R3 independiente registró un P1 porque UI y PostgreSQL pasaban por separado. La corrección posterior incorporó `pnpm verify:connected`: un navegador real lee y escribe por PostgREST 14.12, RLS limita la lectura al perfil propio, la UI confirma la operación y PostgreSQL demuestra versión y auditoría. R4 confirmó el cierre técnico del P1; el seguimiento independiente mantiene 0 P0/P1 abiertos y 1 P2 físico.
+R3 independiente registró un P1 porque UI y PostgreSQL pasaban por separado. La corrección posterior incorporó `pnpm verify:connected`: un navegador real lee y escribe por PostgREST 14.12, RLS limita la lectura al perfil propio, la UI confirma la operación y PostgreSQL demuestra versión y auditoría. R4 confirmó el cierre técnico del P1; el seguimiento independiente mantiene 0 P0/P1 abiertos y el P2 físico residual fue aceptado explícitamente por el usuario en el cierre G3.
 
 `DEC-0209` quedó implementada el 2026-07-24 en `davidgq10/JBCTopografiaGestionProyectos`: `Main` es la rama predeterminada y protegida, y la primera ejecución alojada pasó los jobs `Quality` y `Database`. La revisión de dependencias se ejecuta en pull requests y se promueve a check requerido tras su primer registro en GitHub.
 
@@ -43,4 +43,4 @@ El bundle principal emite una advertencia de tamaño (~799 kB sin comprimir). No
 
 ## Dictamen
 
-La base ejecutable, el recorrido conectado y Entra QA están construidos y verificados. Fase 3 permanece activa en **NO-GO condicionado**: G3 no debe presentarse hasta cerrar el P2 físico (teclado/foco, zoom nativo 200 %, Chrome Android físico y Safari iPhone/iOS) y recibir aprobación explícita del usuario. El frente GitHub/CI de `DEC-0209` está cerrado.
+La base ejecutable, el recorrido conectado y Entra QA están construidos y verificados. El usuario declaró **“P2 aprobado y G3 aprobado”** el 2026-07-29; con ello el P2 residual queda aceptado y Fase 3/G3 se cierran. La aceptación no convierte la evidencia emulada en una prueba física adicional; el registro formal está en [F03-G3-USER-APPROVAL-2026-07-29.md](../testing/evidence/F03/F03-G3-USER-APPROVAL-2026-07-29.md). El frente GitHub/CI de `DEC-0209` está cerrado.

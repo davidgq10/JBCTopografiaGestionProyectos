@@ -1,6 +1,6 @@
 # Checkpoints y aprobaciones
 
-Estado: **gobernanza vigente; G0, CP-UX y G2 aprobados; Fase 3 activa y G3 pendiente**
+Estado: **gobernanza vigente; G0, CP-UX, G2 y G3 aprobados; Fase 3 cerrada**
 
 G0: **aprobado por el usuario el 2026-07-23**. DEC-0101 y DEC-0102 quedaron resueltas en la misma aprobación.
 
@@ -8,7 +8,7 @@ CP-UX: **aprobado por el usuario el 2026-07-23**. R2 emitió GO con 0 P0/P1/P2/P
 
 G2: **aprobado por el usuario el 2026-07-23** con la declaración “Aprobado cierre fase 2”. R6 emitió GO con 0 P0/P1/P2/P3. Fase 2 está cerrada y Fase 3 no se inició en este cierre.
 
-G3: **pendiente / NO-GO condicionado**. R4 confirmó 0 P0/P1 y cerró técnicamente el P1 del recorrido conectado; la base local, UI→PostgREST→DB, PWA, GitHub/CI, Entra QA real y evidencia suplementaria Edge/WebKit están implementados. Falta cerrar el P2 físico restante y obtener aprobación del usuario. No iniciar Fase 4.
+G3: **aprobado por el usuario el 2026-07-29** con la declaración “P2 aprobado y G3 aprobado”. R4 confirmó 0 P0/P1; la base local, UI→PostgREST→DB, PWA, GitHub/CI, Entra QA real y evidencia suplementaria Edge/WebKit están implementados. El P2 físico residual queda aceptado explícitamente por el usuario y Fase 3 queda cerrada. Fase 4 aún no se inicia.
 
 | ID        | Momento                             | Evidencia mínima                                                                                                                                      | Aprobación requerida                                                        | Si no se aprueba                                        |
 | --------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------- |
