@@ -8,7 +8,7 @@ CP-UX: **aprobado por el usuario el 2026-07-23**. R2 emitió GO con 0 P0/P1/P2/P
 
 G2: **aprobado por el usuario el 2026-07-23** con la declaración “Aprobado cierre fase 2”. R6 emitió GO con 0 P0/P1/P2/P3. Fase 2 está cerrada y Fase 3 no se inició en este cierre.
 
-G3: **pendiente / NO-GO independiente R3**. La base local, el recorrido conectado UI→PostgREST→DB y el frente GitHub/CI de `DEC-0209` están implementados. Faltan validar Entra en un ambiente autorizado, repetir la revisión independiente sin P0/P1, cerrar el P2 restante y obtener aprobación del usuario. No iniciar Fase 4.
+G3: **pendiente / NO-GO condicionado**. R4 confirmó 0 P0/P1 y cerró técnicamente el P1 del recorrido conectado; la base local, UI→PostgREST→DB, PWA, GitHub/CI, Entra QA real y evidencia suplementaria Edge/WebKit están implementados. Falta cerrar el P2 físico restante y obtener aprobación del usuario. No iniciar Fase 4.
 
 | ID        | Momento                             | Evidencia mínima                                                                                                                                      | Aprobación requerida                                                        | Si no se aprueba                                        |
 | --------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------- |

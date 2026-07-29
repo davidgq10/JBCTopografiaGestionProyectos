@@ -38,7 +38,7 @@ Las rutas no existentes se crean únicamente dentro de la propiedad indicada. La
 | Propietario              | Rutas de escritura exclusivas                                                     | Rutas prohibidas                                    | Estado                                                         |
 | ------------------------ | --------------------------------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------------- |
 | Orquestador `/root`      | código F3, configuración del workspace, migración 20, pruebas y documentación F03 | especificación; proveedores/secretos no autorizados | implementación integrada; conserva propiedad para correcciones |
-| Revisor independiente F3 | ninguna                                                                           | todo el repositorio para escritura                  | R1/R2/R3 solo lectura; R3 NO-GO 0/1/1/0                        |
+| Revisor independiente F3 | ninguna                                                                           | todo el repositorio para escritura                  | R1/R2/R3/R4 solo lectura; R4 0/0/1/0 y P1 conectado cerrado    |
 
 ## Asignación propuesta por raíz futura
 

@@ -15,6 +15,8 @@ export default tseslint.config(
       '**/*.config.{ts,js,mjs}',
       '**/.storybook/**',
       'prototypes/**',
+      'supabase/.temp/**',
+      'supabase/.branches/**',
     ],
   },
   js.configs.recommended,

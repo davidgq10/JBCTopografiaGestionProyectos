@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:pwa": "node scripts/run-pwa-e2e.mjs",
+    "test:a11y:supplemental": "node scripts/run-f3-a11y-supplemental.mjs",
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {

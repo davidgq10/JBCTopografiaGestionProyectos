@@ -3,6 +3,7 @@ project_id = "jbc-proyectos-local"
 [api]
 enabled = true
 port = 54321
+external_url = "http://localhost:54321"
 schemas = ["public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
@@ -17,8 +18,8 @@ port = 54323
 
 [auth]
 enabled = true
-site_url = "http://127.0.0.1:4173"
-additional_redirect_urls = ["http://localhost:4173"]
+site_url = "http://localhost:4173"
+additional_redirect_urls = ["http://127.0.0.1:4173"]
 enable_signup = false
 
 [auth.external.azure]
@@ -26,3 +27,4 @@ enabled = false
 client_id = "env(SUPABASE_AUTH_EXTERNAL_AZURE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_AZURE_SECRET)"
 url = "env(SUPABASE_AUTH_EXTERNAL_AZURE_URL)"
+redirect_uri = "http://localhost:54321/auth/v1/callback"
