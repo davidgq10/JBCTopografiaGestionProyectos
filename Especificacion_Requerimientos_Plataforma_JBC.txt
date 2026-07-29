@@ -934,6 +934,13 @@ El acento se guardará en el perfil y sincronizará entre dispositivos. Solo afe
 
 AppShell responsive con barra lateral en escritorio y navegación inferior en celular. Componentes compartidos: PageShell, PageHeader, Section, StatusBadge, DataTable, FilterBar, EmptyState, ErrorState, LoadingSkeleton, IntegrationHealth, ApprovalSummary, ConfirmActionModal, FormActions, AuditTimeline, AiSuggestion, FileExplorer y ResponsiveDetailList.
 
+En Configuración cada usuario podrá seleccionar y ordenar los tres accesos intermedios que desea
+ver en la navegación inferior móvil entre Agenda, Avisos, Cuenta, Proyectos y Tareas. Inicio será
+siempre el primer botón a la izquierda y Más será siempre el último botón a la derecha; ambos quedan
+fuera de la selección. Los accesos no seleccionados seguirán disponibles dentro de Más, junto con
+Configuración. La preferencia se guardará en el perfil, se sincronizará entre dispositivos y se
+actualizará con control optimista de versión y auditoría.
+
 ## Tablas y formularios
 
 Tablas sin borde exterior ni separadores verticales, con divisores horizontales tenues. En celular se transformarán en filas o tarjetas ligeras.
@@ -947,6 +954,7 @@ En teléfono se podrán gestionar clientes, proyectos, gestiones, tareas, listas
 Adaptaciones:
 
 - Navegación inferior y encabezado compacto.
+- Navegación inferior configurable por usuario: Inicio fijo, tres accesos intermedios seleccionables y ordenables, y Más fijo.
 - Listados apilados.
 - Agenda como vista inicial.
 - Navegación OneDrive por avance/retroceso.
@@ -982,6 +990,7 @@ WCAG 2.2 AA, foco visible, teclado, semántica, lectores de pantalla, reducción
 - axe-core sin hallazgos críticos/serios y Lighthouse accesibilidad al menos 95.
 - Flujos críticos por teclado y móvil.
 - Revisión visual independiente en Edge, Chrome, Android e iPhone.
+- Configuración permite ordenar tres accesos móviles entre Agenda, Avisos, Cuenta, Proyectos y Tareas; Inicio siempre es primero y Más siempre es último.
 
 # Anexo A — Prompt maestro para desarrollar la aplicación con IA
 
@@ -1636,4 +1645,3 @@ Entrega primero:
 - Cloud Run: https://cloud.google.com/run/docs
 - WCAG 2.2: https://www.w3.org/TR/WCAG22/
 - OWASP ASVS: https://owasp.org/www-project-application-security-verification-standard/
-

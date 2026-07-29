@@ -65,6 +65,7 @@ Ningún resultado se marca aprobado sin comando/configuración reproducible, ver
 |  17 | Flujos críticos a 360 px                    | AC-004-05, AC-020-05, AC-020-08 |
 |  18 | Cargar fotografía desde celular             | AC-007-04, AC-020-05            |
 |  19 | Cambiar acento sin alterar semántica        | AC-020-06                       |
+|  20 | Configurar orden de navegación móvil        | AC-020-10                       |
 
 ## Subcasos normativos materiales
 

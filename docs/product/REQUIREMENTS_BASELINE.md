@@ -2,8 +2,8 @@
 
 Estado: **línea base aprobada en G0 el 2026-07-23**  
 Fuente normativa: `Especificacion_Requerimientos_Plataforma_JBC.txt`  
-SHA-256 inspeccionado: `A35DB4A87B7D303A7B016C9DABC7F36257E18DC3205306F37B3D2B2493486C6E`  
-Fecha de inspección: 2026-07-22 (`America/Costa_Rica`)
+SHA-256 inspeccionado: `6EBDAF6F21C06ACD8B1F3CB180286A915F709FA0D2762B4890DB7A5CED9F47BB`
+Fecha de inspección: 2026-07-29 (`America/Costa_Rica`), actualizado por `DEC-0212`.
 
 La especificación completa y sus anexos prevalecen. Este documento fija los identificadores, estados, propósito y criterios canónicos para impedir deriva durante la implementación. Los criterios detallados están en [ACCEPTANCE_CRITERIA.md](./ACCEPTANCE_CRITERIA.md) y su asignación a diseño, datos, permisos, prueba y evidencia está en [TRACEABILITY_MATRIX.md](./TRACEABILITY_MATRIX.md).
 
@@ -31,7 +31,7 @@ La especificación completa y sus anexos prevalecen. Este documento fija los ide
 | RF-018 | Entornos, despliegue y versiones                    | Aprobado                          |                 5 |
 | RF-019 | Modelo de datos                                     | Aprobado                          |                 6 |
 | RF-020 | Sistema visual, personalización y celular, ajustado | Aprobado                          |                 9 |
-|        | **Total**                                           | **19 RF aprobados; 1 descartado** |           **100** |
+|        | **Total**                                           | **19 RF aprobados; 1 descartado** |           **101** |
 
 ## Requisitos canónicos
 

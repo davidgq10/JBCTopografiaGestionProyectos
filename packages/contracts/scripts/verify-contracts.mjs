@@ -8,6 +8,7 @@ const files = {
   openapi: read('docs/api/openapi.yaml'),
   readme: read('docs/api/README.md'),
   common: read('packages/contracts/src/common.ts'),
+  profile: read('packages/contracts/src/profile.ts'),
   work: read('packages/contracts/src/work.ts'),
   approval: read('packages/contracts/src/approval.ts'),
   events: read('packages/contracts/src/events.ts'),
@@ -55,6 +56,9 @@ const pairedSchemas = [
   ['DocumentReference', 'DocumentReferenceSchema'],
   ['ApprovalTarget', 'ApprovalTargetSchema'],
   ['ApprovalRequest', 'ApprovalRequestSchema'],
+  ['AppearanceProfile', 'AppearanceProfileSchema'],
+  ['UpdateOwnAppearanceCommandBody', 'UpdateOwnAppearanceCommandSchema'],
+  ['UpdateOwnMobileNavigationCommandBody', 'UpdateOwnMobileNavigationCommandSchema'],
   ['ApiError', 'ApiErrorSchema'],
 ];
 for (const [openApiName, zodName] of pairedSchemas) {

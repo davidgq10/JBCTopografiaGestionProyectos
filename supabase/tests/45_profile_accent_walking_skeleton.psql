@@ -34,7 +34,9 @@ begin
   end if;
 
   update public.app_users
-  set preferred_accent = '#0f766e', preferred_theme = 'dark'
+  set preferred_accent = '#0f766e',
+      preferred_theme = 'dark',
+      mobile_nav_items = array['proyectos', 'tareas', 'avisos']::text[]
   where id = 'a1000000-0000-4000-8000-000000000003'
     and version = 1;
   get diagnostics updated_count = row_count;
@@ -55,6 +57,33 @@ begin
     set preferred_accent = '#FFFFFF'
     where id = 'a1000000-0000-4000-8000-000000000003';
     raise exception 'F3-ACCENT FAIL: el servidor aceptó contraste insuficiente';
+  exception
+    when check_violation then null;
+  end;
+
+  begin
+    update public.app_users
+    set mobile_nav_items = array['agenda', 'agenda', 'avisos']::text[]
+    where id = 'a1000000-0000-4000-8000-000000000003';
+    raise exception 'F3-NAV FAIL: el servidor aceptó accesos repetidos';
+  exception
+    when check_violation then null;
+  end;
+
+  begin
+    update public.app_users
+    set mobile_nav_items = array['agenda', 'avisos', 'calendario']::text[]
+    where id = 'a1000000-0000-4000-8000-000000000003';
+    raise exception 'F3-NAV FAIL: el servidor aceptó un acceso fuera de catálogo';
+  exception
+    when check_violation then null;
+  end;
+
+  begin
+    update public.app_users
+    set mobile_nav_items = array['agenda', 'avisos']::text[]
+    where id = 'a1000000-0000-4000-8000-000000000003';
+    raise exception 'F3-NAV FAIL: el servidor aceptó menos de tres accesos';
   exception
     when check_violation then null;
   end;
@@ -113,6 +142,12 @@ begin
   if (select preferred_theme from public.app_users
       where id = 'a1000000-0000-4000-8000-000000000003') <> 'dark' then
     raise exception 'F3-ACCENT FAIL: el servidor no sincronizó el tema';
+  end if;
+
+  if (select mobile_nav_items from public.app_users
+      where id = 'a1000000-0000-4000-8000-000000000003')
+     <> array['proyectos', 'tareas', 'avisos']::text[] then
+    raise exception 'F3-NAV FAIL: el servidor no guardó el orden móvil';
   end if;
 
   select count(*) into audit_count

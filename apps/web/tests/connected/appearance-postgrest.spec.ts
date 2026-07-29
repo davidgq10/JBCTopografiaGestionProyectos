@@ -18,4 +18,12 @@ test('recorre UI, PostgREST, RLS y escritura auditada', async ({ page }) => {
   await page.getByRole('button', { name: 'Azul' }).click();
   await page.getByRole('button', { name: 'Guardar apariencia' }).click();
   await expect(page.getByText(/quedó guardada/i)).toBeVisible();
+  await page.locator('a.desktopNavLink').filter({ hasText: 'Configuración' }).click();
+  await expect(page.getByRole('heading', { name: 'Panel móvil' })).toBeVisible();
+  const firstSlot = page.getByRole('textbox', { name: 'Acceso 1' });
+  await firstSlot.click();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Guardar panel móvil' }).click();
+  await expect(page.getByText(/Navegación móvil actualizada/i)).toBeVisible();
 });

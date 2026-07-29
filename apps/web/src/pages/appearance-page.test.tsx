@@ -15,6 +15,7 @@ const initialProfile: AppearanceProfile = {
   email: 'maria@example.test',
   preferredAccent: 'teal',
   preferredTheme: 'auto',
+  mobileNavItems: ['agenda', 'avisos', 'cuenta'],
   version: 1,
   updatedAt: '2026-07-24T00:00:00.000Z',
 };
@@ -29,6 +30,11 @@ function createServices() {
   const profile: AppearanceProfilePort = {
     loadOwnProfile: vi.fn(async () => initialProfile),
     updateOwnAppearance,
+    updateOwnMobileNavigation: vi.fn(async ({ mobileNavItems }) => ({
+      ...initialProfile,
+      mobileNavItems,
+      version: 2,
+    })),
   };
   const session: SessionPort = {
     getCurrentSession: vi.fn(async () => ({

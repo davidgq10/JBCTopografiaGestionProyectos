@@ -1,6 +1,6 @@
 # Estado actual
 
-Actualizado: **2026-07-28 America/Costa_Rica**.
+Actualizado: **2026-07-29 America/Costa_Rica**.
 
 - Última fase cerrada: **2 — arquitectura técnica, contratos y datos**.
 - Fase activa: **3 — esqueleto ejecutable**.
@@ -11,24 +11,25 @@ Actualizado: **2026-07-28 America/Costa_Rica**.
 ## Corte Fase 3
 
 - Monorepo pnpm con React, TypeScript estricto, Vite, Mantine y límites Clean Architecture.
-- AppShell responsive, sidebar normal/slim, navegación inferior a 360 px, tema y acento accesibles sincronizados por perfil.
+- AppShell responsive, sidebar normal/slim, navegación inferior a 360 px, preferencia de tres accesos móviles sincronizada por perfil, tema y acento accesibles.
 - Supabase Auth Azure preparado y cerrado por defecto; cliente público sin secretos ni `service_role`.
-- Perfil/apariencia propio: lectura RLS, escritura validada en servidor, versión optimista y auditoría append-only transaccional.
+- Perfil/apariencia propio: lectura RLS, preferencias visuales y orden móvil validado en servidor, versión optimista y auditoría append-only transaccional.
 - PWA de shell estático; tráfico Supabase `NetworkOnly`, mutaciones deshabilitadas offline y recarga fría del build comprobada.
 - entorno/versión visibles, estados/errores uniformes y Storybook a11y.
 - contrato reproducible de CI: `pnpm verify:ci` + PostgreSQL efímero con `pnpm verify:database`.
 
 ## Evidencia vigente
 
-- dominio 97.22 % y aplicación 100 % de cobertura;
+- dominio 97.22 % y aplicación 97.43 % de cobertura;
 - 57/57 tablas RLS habilitada/forzada; `RLS-STRUCT PASS`; `RLS-MATRIX PASS 2561/2561`;
 - `F3-ACCENT PASS | login claims -> RLS read -> validated write -> append-only audit`;
-- Playwright 12/12 en Chromium 1440/1024/768/360 px, más 1/1 de recarga PWA fría offline; axe 0 crítico/serio y sin desbordamiento;
+- Playwright 14/14 escenarios ejecutables en Chromium 1440/1024/768/360 px (6 omitidos por viewport), más 1/1 de recarga PWA fría offline; axe 0 crítico/serio y sin desbordamiento;
 - formato, lint, tipos, arquitectura, secretos, SQL estático, build PWA y Storybook PASS.
-- `pnpm verify:ci` PASS: 12/12 E2E Chromium y 1/1 PWA.
+- `pnpm verify:ci` PASS: 14/14 E2E Chromium ejecutables (6 omitidos por viewport) y 1/1 PWA.
 - `pnpm verify:database` PASS: PostgreSQL 17 efímero, 57/57 RLS, matriz 2561/2561 y `F3-ACCENT PASS`.
 - `pnpm verify:connected` PASS: UI → PostgREST 14.12 → PostgreSQL 17 → RLS → auditoría.
 - Entra QA real PASS: tenant QA, MFA, callback `localhost`, sesión preautorizada, rol `technician` y revocación/restauración controladas.
+- Preferencia de navegación móvil PASS: Configuración, selección/orden con Inicio y Más fijos, RLS, versión y auditoría; evidencia en `F03/F03-MOBILE-NAV-PREFERENCES-2026-07-29.md`.
 - R4 independiente y seguimiento: 0 P0, 0 P1, 1 P2, 0 P3; evidencia suplementaria Edge/WebKit emulado PASS y Entra QA real PASS.
 
 Fuentes: [informe F3](PHASE_3_REPORT.md) y [evidencia F03](../testing/evidence/F03/README.md).

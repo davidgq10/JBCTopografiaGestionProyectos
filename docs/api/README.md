@@ -40,19 +40,22 @@ roles y membresías persistidos, y un `403` expresa el resultado de esa polític
 
 ## Correspondencia OpenAPI ↔ Zod
 
-| OpenAPI                                     | Zod                               | Propósito                                                |
-| ------------------------------------------- | --------------------------------- | -------------------------------------------------------- |
-| `WorkContext`                               | `WorkContextSchema`               | identidad inseparable Proyecto/Trabajo                   |
-| `ResourceScope`                             | `ResourceScopeSchema`             | alcance discriminado organización/Proyecto/Trabajo       |
-| `WorkSummary`                               | `WorkSummarySchema`               | estado interno de un Trabajo, sin agregación destructiva |
-| `ExternalProcedureSnapshot`                 | `ExternalProcedureSnapshotSchema` | fotografía APT/SIRI de solo lectura                      |
-| `DocumentReference`                         | `DocumentReferenceSchema`         | metadatos OneDrive sin binario                           |
-| `ChangeWorkTypeCommandBody` + headers/path  | `ChangeWorkTypeCommandSchema`     | solicitud idempotente y concurrente                      |
-| `ApprovalTarget`                            | `ApprovalTargetSchema`            | entidad y versión revisadas                              |
-| `RequestApprovalCommandBody` + headers/path | `RequestApprovalCommandSchema`    | solicitud contextual                                     |
-| `ResolveApprovalCommandBody` + headers/path | `ResolveApprovalCommandSchema`    | decisión separada de ejecución                           |
-| `ApprovalRequest`                           | `ApprovalRequestSchema`           | estado de aprobación                                     |
-| `ApiError`                                  | `ApiErrorSchema`                  | error uniforme y seguro                                  |
+| OpenAPI                                     | Zod                                      | Propósito                                                |
+| ------------------------------------------- | ---------------------------------------- | -------------------------------------------------------- |
+| `WorkContext`                               | `WorkContextSchema`                      | identidad inseparable Proyecto/Trabajo                   |
+| `ResourceScope`                             | `ResourceScopeSchema`                    | alcance discriminado organización/Proyecto/Trabajo       |
+| `WorkSummary`                               | `WorkSummarySchema`                      | estado interno de un Trabajo, sin agregación destructiva |
+| `ExternalProcedureSnapshot`                 | `ExternalProcedureSnapshotSchema`        | fotografía APT/SIRI de solo lectura                      |
+| `DocumentReference`                         | `DocumentReferenceSchema`                | metadatos OneDrive sin binario                           |
+| `ChangeWorkTypeCommandBody` + headers/path  | `ChangeWorkTypeCommandSchema`            | solicitud idempotente y concurrente                      |
+| `ApprovalTarget`                            | `ApprovalTargetSchema`                   | entidad y versión revisadas                              |
+| `RequestApprovalCommandBody` + headers/path | `RequestApprovalCommandSchema`           | solicitud contextual                                     |
+| `ResolveApprovalCommandBody` + headers/path | `ResolveApprovalCommandSchema`           | decisión separada de ejecución                           |
+| `ApprovalRequest`                           | `ApprovalRequestSchema`                  | estado de aprobación                                     |
+| `AppearanceProfile`                         | `AppearanceProfileSchema`                | perfil propio, preferencias y versión                    |
+| `UpdateOwnAppearanceCommandBody`            | `UpdateOwnAppearanceCommandSchema`       | acento/tema propios con concurrencia                     |
+| `UpdateOwnMobileNavigationCommandBody`      | `UpdateOwnMobileNavigationCommandSchema` | orden móvil propio con concurrencia                      |
+| `ApiError`                                  | `ApiErrorSchema`                         | error uniforme y seguro                                  |
 
 Los headers y parámetros se ensamblan en el adaptador HTTP antes de validar el
 comando Zod. Los esquemas Zod son la frontera canónica de ejecución; OpenAPI es su

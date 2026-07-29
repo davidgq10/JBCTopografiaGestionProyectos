@@ -25,6 +25,7 @@ Estado: **migraciones y validación estática ejecutadas; rutas limpia e increme
 |    17 | `20260723091700_f2_user_specialty_reassignment.sql`        | conserva historia y permite reotorgar una especialidad archivada bajo unicidad activa parcial                         |
 |    18 | `20260723091800_f2_work_type_change_approval_binding.sql`  | vincula el cambio exacto de tipo/configuración/estado con solicitud, decisión y ejecución vigente de un solo uso      |
 |    19 | `20260723091900_f2_functional_rls_dec_0103.sql`            | roles aprobados, helpers endurecidos, propietario `NOLOGIN`, anclas directas OneDrive y 136 políticas funcionales RLS |
+|    20 | `20260729010000_f3_mobile_navigation_preferences.sql`      | tres accesos móviles distintos por usuario, orden Inicio/Más fijo, RLS, versión y auditoría append-only               |
 
 Cada archivo abre y cierra su propia transacción. La secuencia es estricta y las correcciones posteriores a R1 son migraciones hacia adelante. La quinta migración deja el esquema denegado por defecto; no representa la matriz funcional final.
 
@@ -55,10 +56,10 @@ Para comprobar incrementalidad:
 1. crear una base desechable;
 2. aplicar 01 y 02;
 3. insertar fixtures mínimos dentro de una transacción que cree Proyecto+Trabajo juntos;
-4. aplicar 03→19;
+4. aplicar 03→20;
 5. comprobar que los fixtures siguen legibles y que `version` inicia en 1;
 6. ejecutar pruebas negativas de invariantes;
-7. comparar el catálogo resultante con una migración limpia de 01→19.
+7. comparar el catálogo resultante con una migración limpia de 01→20.
 
 Las migraciones no renombran ni eliminan columnas/tablas. Una corrección posterior debe agregarse en un archivo nuevo; no se modifica una migración ya aplicada fuera de este corte previo a G2.
 
@@ -121,8 +122,8 @@ order by table_name;
 
 El autor preparó las migraciones y el orquestador las ejecutó durante la integración en PostgreSQL 17.10:
 
-- migración limpia 01→19: **PASS**;
-- actualización 01→02, fixture Proyecto+Trabajo, 03→19: **PASS**;
+- migración limpia 01→20: **PASS**;
+- actualización 01→02, fixture Proyecto+Trabajo, 03→20: **PASS**;
 - fixture incremental conservado con `version = 1`: **PASS**;
 - catálogos limpio/actualizado: **57 tablas, 227 FK, 155 índices, 130 triggers y 136 políticas en ambos**;
 - huella normalizada de esquema: **idéntica** (`761f627b03a648b03feb95136753a3e2209234c28ac2a1dae62d2d722a8b035c`), `293930` bytes UTF-8 tras excluir tokens aleatorios `restrict/unrestrict` de `pg_dump`;
@@ -133,4 +134,4 @@ El autor preparó las migraciones y el orquestador las ejecutó durante la integ
 - cambio de tipo: mismatch, ausencia de decisión/ejecución, ejecución consumida y reutilización rechazados; camino exacto consume aprobación y conserva APT histórico;
 - matriz RLS funcional: **PASS 2561/2561** en las rutas limpia e incremental; con `dec_0103_approved=0` continúa bloqueada correctamente.
 
-La evidencia reproducible final está en `docs/testing/evidence/F02/F02-RLS-FUNCTIONAL-2026-07-23.md`. R6 la confirmó sin hallazgos y el usuario aprobó G2 el 2026-07-23. Fase 3 no se inició dentro de este cierre.
+La evidencia reproducible de Fase 2 está en `docs/testing/evidence/F02/F02-RLS-FUNCTIONAL-2026-07-23.md`; la extensión de Fase 3 se verifica en `docs/testing/evidence/F03/F03-MOBILE-NAV-PREFERENCES-2026-07-29.md`.

@@ -2,7 +2,7 @@
 
 Estado: **aprobado en G0 el 2026-07-23**
 
-Este catálogo normaliza la especificación en **100 criterios activos**. `E` indica un criterio explícito bajo “Criterios de aceptación”; `C` consolida reglas normativas de los RF que no traen una sección formal o que necesitan una condición medible transversal. Ningún criterio consolidado amplía el alcance.
+Este catálogo normaliza la especificación en **101 criterios activos**. `E` indica un criterio explícito bajo “Criterios de aceptación”; `C` consolida reglas normativas de los RF que no traen una sección formal o que necesitan una condición medible transversal. Ningún criterio consolidado amplía el alcance. `AC-020-10` se incorporó mediante `DEC-0212` el 2026-07-29 como ajuste aprobado posterior a G0.
 
 RF-013 no contiene criterios activos: su única comprobación es una prueba de exclusión (`EX-013-01`) que impide reintroducirlo.
 
@@ -166,6 +166,7 @@ RF-013 no contiene criterios activos: su única comprobación es una prueba de e
 - `AC-020-07` (`E`): axe-core no presenta hallazgos críticos/serios y Lighthouse accesibilidad alcanza al menos 95.
 - `AC-020-08` (`E`): flujos críticos funcionan por teclado y móvil, con áreas táctiles mínimas y alternativas a hover/arrastre.
 - `AC-020-09` (`E`): revisión visual independiente cubre Edge, Chrome, Android, iPhone, anchos objetivo, orientación, zoom y varios acentos.
+- `AC-020-10` (`E`, `DEC-0212`): Configuración permite seleccionar y ordenar tres accesos entre Agenda, Avisos, Cuenta, Proyectos y Tareas; Inicio permanece primero, Más permanece último y los no seleccionados siguen disponibles dentro de Más.
 
 ## Regla de mantenimiento
 

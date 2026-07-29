@@ -60,6 +60,9 @@ test('muestra Proyectos y Tareas en el menú Más del celular', async ({ page })
   const closeButton = moreOptions.getByRole('button', { name: 'Cerrar más opciones' });
   await expect(closeButton).toBeVisible();
   await expect(closeButton).toBeFocused();
+  const closeBox = await closeButton.boundingBox();
+  expect(closeBox?.width ?? 0).toBeGreaterThanOrEqual(44);
+  expect(closeBox?.height ?? 0).toBeGreaterThanOrEqual(44);
   await expect(moreOptions.getByRole('link', { name: 'Proyectos' })).toBeVisible();
   await expect(moreOptions.getByRole('link', { name: 'Tareas' })).toBeVisible();
 
@@ -76,6 +79,40 @@ test('muestra Proyectos y Tareas en el menú Más del celular', async ({ page })
   await moreButton.click();
   await moreOptions.getByRole('link', { name: 'Proyectos' }).click();
   await expect(page.getByRole('heading', { name: 'Proyectos' })).toBeVisible();
+});
+
+test('permite configurar el orden de los accesos móviles', async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 0) >= 768, 'Este recorrido valida la navegación móvil.');
+
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Entrar con Microsoft' }).click();
+  await expect(page.getByRole('heading', { name: /Hola, María Técnica/ })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Mostrar más opciones' }).click();
+  await page.getByRole('link', { name: 'Configuración' }).click();
+  await expect(page.getByRole('heading', { name: 'Panel móvil' })).toBeVisible();
+
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(
+    accessibility.violations.filter((item) => ['critical', 'serious'].includes(item.impact ?? '')),
+  ).toEqual([]);
+
+  const firstSlot = page.getByRole('textbox', { name: 'Acceso 1' });
+  await firstSlot.click();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await page.getByRole('button', { name: 'Guardar panel móvil' }).click();
+  await expect(page.getByText(/Navegación móvil actualizada/i)).toBeVisible();
+
+  await expect(page.locator('.mobileNavigation a.mobileNavItem').nth(0)).toHaveText('Inicio');
+  await expect(page.locator('.mobileNavigation a.mobileNavItem').nth(1)).toHaveText('Proyectos');
+
+  await page.getByRole('button', { name: 'Mostrar más opciones' }).click();
+  const moreOptions = page.getByRole('dialog', { name: 'Más opciones' });
+  await expect(moreOptions.getByRole('link', { name: 'Agenda' })).toBeVisible();
+  await expect(moreOptions.getByRole('link', { name: 'Tareas' })).toBeVisible();
+  await expect(moreOptions.getByRole('link', { name: 'Proyectos' })).toHaveCount(0);
+  await page.keyboard.press('Escape');
 });
 
 test('abre un shell seguro sin datos ni mutaciones al quedar offline', async ({ page }) => {

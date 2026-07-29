@@ -1,6 +1,6 @@
 # Informe de Fase 3 — esqueleto ejecutable
 
-Fecha de corte: **2026-07-28 America/Costa_Rica**
+Fecha de corte: **2026-07-29 America/Costa_Rica**
 
 Estado: **implementación técnica integrada; P1 conectado y Entra QA real cerrados; G3 no presentado**.
 
@@ -8,10 +8,10 @@ Estado: **implementación técnica integrada; P1 conectado y Entra QA real cerra
 
 - Monorepo pnpm con paquetes separados de dominio, aplicación, contratos, fixtures y web.
 - React 19, TypeScript estricto, Vite, Mantine y React Router Data Mode con límites de arquitectura comprobados.
-- AppShell profesional: sidebar normal/slim, una sola `J` para expandir, Configuración en el pie y navegación inferior móvil a 360 px.
+- AppShell profesional: sidebar normal/slim, una sola `J` para expandir, Configuración en el pie y navegación inferior móvil a 360 px con tres accesos configurables por usuario.
 - Tema automático/claro/oscuro y acento individual predefinido o hexadecimal, sincronizados por perfil, previsualizables, restaurables y validados para contraste AA.
 - Adaptadores Supabase para sesión Azure y perfil propio; sin `service_role` ni secreto en React.
-- Migración F3 con validación de acento en PostgreSQL, concurrencia por versión para todos los roles y auditoría append-only transaccional con actor/rol.
+- Migración F3 con validación de preferencias (acento, tema y orden móvil) en PostgreSQL, concurrencia por versión para todos los roles y auditoría append-only transaccional con actor/rol.
 - PWA `injectManifest`: shell estático disponible y peticiones Supabase `NetworkOnly`; escrituras deshabilitadas al quedar offline; recarga fría del build probada.
 - entorno no productivo y versión SemVer visibles; errores y estados de carga/vacío/degradación uniformes.
 - Storybook con estados del sistema y addon a11y; Vitest/Testing Library/MSW y Playwright/axe.
@@ -19,13 +19,14 @@ Estado: **implementación técnica integrada; P1 conectado y Entra QA real cerra
 - recorrido conectado validado con `pnpm verify:connected`: UI → PostgREST 14.12 → PostgreSQL 17 → RLS → auditoría → confirmación visible;
 - accesibilidad suplementaria PASS en Edge de escritorio y WebKit con perfil iPhone emulado; la validación física continúa pendiente;
 - Microsoft Entra QA real PASS con MFA, callback `http://localhost:54321/auth/v1/callback`, sesión preautorizada, rol `technician` y revocación/restauración controladas.
+- Preferencia de navegación móvil PASS: Configuración persiste tres accesos ordenables entre Agenda, Avisos, Cuenta, Proyectos y Tareas, con Inicio/Más fijos, RLS, versión y auditoría. Evidencia: [F03-MOBILE-NAV-PREFERENCES-2026-07-29.md](../testing/evidence/F03/F03-MOBILE-NAV-PREFERENCES-2026-07-29.md).
 
 ## Evidencia ejecutada
 
-- dominio: 97.22 % de líneas; aplicación: 100 %;
+- dominio: 97.22 % de líneas; aplicación: 97.43 %;
 - RLS: `RLS-STRUCT PASS` y `RLS-MATRIX PASS 2561/2561`;
 - F3 DB: `F3-ACCENT PASS | login claims -> RLS read -> validated write -> append-only audit`;
-- navegador: 12/12 en Chromium 1440/1024/768/360 px y 1/1 PWA compilada offline; axe 0 crítico/serio; sin desbordamiento horizontal;
+- navegador: 14/14 escenarios ejecutables en Chromium 1440/1024/768/360 px (6 omitidos por viewport) y 1/1 PWA compilada offline; axe 0 crítico/serio; sin desbordamiento horizontal;
 - lint, tipos, arquitectura, secretos, SQL estático, build PWA y Storybook: PASS.
 
 Detalle: [evidencia F03](../testing/evidence/F03/README.md).

@@ -31,4 +31,8 @@ export class UnconfiguredProfileAdapter implements AppearanceProfilePort {
   updateOwnAppearance(): Promise<AppearanceProfile> {
     return Promise.reject(new AppGatewayError('CONFIGURATION_ERROR', message));
   }
+
+  updateOwnMobileNavigation(): Promise<AppearanceProfile> {
+    return Promise.reject(new AppGatewayError('CONFIGURATION_ERROR', message));
+  }
 }

@@ -1,24 +1,25 @@
 # Mapeo de contratos a persistencia
 
-Estado: **congelado en Fase 2**. El contrato usa `camelCase` y el esquema `public`
+Estado: **base de Fase 2 extendida en Fase 3 para el perfil propio**. El contrato usa `camelCase` y el esquema `public`
 usa `snake_case`. Este documento evita que los DTO se conviertan en entidades
 persistentes compartidas.
 
-| Concepto de contrato                                             | Tabla propietaria                                                                    | Claves físicas esenciales                                                             |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| `WorkContext` / `WorkSummary`                                    | `projects` + `works`                                                                 | `project_id`, `works.id`; FK compuesta `works(project_id,id)`                         |
-| `ResourceScope`                                                  | superficies transversales                                                            | organización = ambos nulos; Proyecto = `project_id`; Trabajo = `project_id + work_id` |
-| tipo/configuración de Trabajo                                    | `work_types`, `work_type_config_versions`                                            | código estable y versión referenciada                                                 |
-| historia de cambio de tipo                                       | `work_type_history`                                                                  | `project_id`, `work_id`, tipos/estado previos, actor, UTC, correlación                |
-| `WorkTypeChangeTargetSnapshot` / `WorkTypeChangeApprovalPayload` | `approval_targets.target_snapshot` / `approval_requests.requested_change`            | tipo/configuración/estado anteriores y nuevos exactos; invariables tras borrador      |
-| inmueble/propiedad por Trabajo                                   | `properties`, `work_properties`, `work_property_values`                              | FK compuesta Proyecto/Trabajo                                                         |
-| gestión/tarea/programación                                       | `managements`, `tasks`, `schedule_blocks`                                            | `project_id`, `work_id` en cada referencia operativa                                  |
-| `ExternalProcedureSnapshot`                                      | `external_procedures`, `external_status_events`, `external_query_runs`               | `original_text` separado de código normalizado                                        |
-| `DocumentReference`                                              | `drive_items`                                                                        | `drive_id`, `drive_item_id`, metadatos; sin columna binaria                           |
-| `ApprovalTarget` / `ApprovalRequest`                             | `approval_targets`, `approval_requests`, `approval_decisions`, `approval_executions` | entidad/versión revisadas, decisión y ejecución separadas                             |
-| `DomainEvent`                                                    | `outbox_events`                                                                      | `event_id`, nombre/versión, agregado, `payload`, correlación, UTC                     |
-| consumo idempotente                                              | `idempotent_consumptions`                                                            | clave única de consumidor + evento/efecto                                             |
-| `AuditAppendRecord`                                              | `audit_events`                                                                       | append-only, actor/proceso, correlación, resultado, UTC                               |
+| Concepto de contrato                                             | Tabla propietaria                                                                    | Claves físicas esenciales                                                                           |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `WorkContext` / `WorkSummary`                                    | `projects` + `works`                                                                 | `project_id`, `works.id`; FK compuesta `works(project_id,id)`                                       |
+| `ResourceScope`                                                  | superficies transversales                                                            | organización = ambos nulos; Proyecto = `project_id`; Trabajo = `project_id + work_id`               |
+| tipo/configuración de Trabajo                                    | `work_types`, `work_type_config_versions`                                            | código estable y versión referenciada                                                               |
+| historia de cambio de tipo                                       | `work_type_history`                                                                  | `project_id`, `work_id`, tipos/estado previos, actor, UTC, correlación                              |
+| `WorkTypeChangeTargetSnapshot` / `WorkTypeChangeApprovalPayload` | `approval_targets.target_snapshot` / `approval_requests.requested_change`            | tipo/configuración/estado anteriores y nuevos exactos; invariables tras borrador                    |
+| inmueble/propiedad por Trabajo                                   | `properties`, `work_properties`, `work_property_values`                              | FK compuesta Proyecto/Trabajo                                                                       |
+| gestión/tarea/programación                                       | `managements`, `tasks`, `schedule_blocks`                                            | `project_id`, `work_id` en cada referencia operativa                                                |
+| `ExternalProcedureSnapshot`                                      | `external_procedures`, `external_status_events`, `external_query_runs`               | `original_text` separado de código normalizado                                                      |
+| `DocumentReference`                                              | `drive_items`                                                                        | `drive_id`, `drive_item_id`, metadatos; sin columna binaria                                         |
+| `ApprovalTarget` / `ApprovalRequest`                             | `approval_targets`, `approval_requests`, `approval_decisions`, `approval_executions` | entidad/versión revisadas, decisión y ejecución separadas                                           |
+| `DomainEvent`                                                    | `outbox_events`                                                                      | `event_id`, nombre/versión, agregado, `payload`, correlación, UTC                                   |
+| consumo idempotente                                              | `idempotent_consumptions`                                                            | clave única de consumidor + evento/efecto                                                           |
+| `AuditAppendRecord`                                              | `audit_events`                                                                       | append-only, actor/proceso, correlación, resultado, UTC                                             |
+| `AppearanceProfile` / `UpdateOwnMobileNavigationCommand`         | `app_users`                                                                          | `preferred_accent`, `preferred_theme`, `mobile_nav_items`; `version` se compara antes de actualizar |
 
 Los demás propietarios físicos de RF-019 permanecen en el diccionario de datos.
 Este paquete solo publica valores/DTO/puertos estables; no reexporta filas, clientes

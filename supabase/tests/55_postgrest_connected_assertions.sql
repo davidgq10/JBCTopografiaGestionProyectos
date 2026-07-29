@@ -4,17 +4,22 @@
 do $connected$
 declare
   audit_count integer;
+  audit_nav_count integer;
   other_version bigint;
   stored_accent text;
   stored_theme text;
+  stored_mobile_nav text[];
   stored_version bigint;
 begin
-  select preferred_accent, preferred_theme, version
-    into stored_accent, stored_theme, stored_version
+  select preferred_accent, preferred_theme, mobile_nav_items, version
+    into stored_accent, stored_theme, stored_mobile_nav, stored_version
   from public.app_users
   where id = 'a1000000-0000-4000-8000-000000000003';
 
-  if stored_accent <> 'azul' or stored_theme <> 'dark' or stored_version <> 2 then
+  if stored_accent <> 'azul'
+     or stored_theme <> 'dark'
+     or stored_mobile_nav <> array['proyectos', 'avisos', 'cuenta']::text[]
+     or stored_version <> 3 then
     raise exception 'CONNECTED-E2E FAIL: la mutación visible no quedó persistida';
   end if;
 
@@ -37,6 +42,19 @@ begin
 
   if audit_count <> 1 then
     raise exception 'CONNECTED-E2E FAIL: falta el evento de auditoría correlacionado';
+  end if;
+
+  select count(*) into audit_nav_count
+  from public.audit_events
+  where entity_id = 'a1000000-0000-4000-8000-000000000003'
+    and actor_user_id = 'a1000000-0000-4000-8000-000000000003'
+    and action_code = 'profile.appearance_updated'
+    and result_code = 'accepted'
+    and old_values @> '{"mobileNavItems":["agenda","avisos","cuenta"]}'::jsonb
+    and new_values @> '{"mobileNavItems":["proyectos","avisos","cuenta"]}'::jsonb;
+
+  if audit_nav_count <> 1 then
+    raise exception 'CONNECTED-E2E FAIL: falta el evento de auditoría de navegación móvil';
   end if;
 end;
 $connected$;

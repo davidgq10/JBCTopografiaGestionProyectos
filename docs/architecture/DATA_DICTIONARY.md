@@ -1,6 +1,6 @@
 # Diccionario de datos físico — Fase 2
 
-Estado: **alineado con migraciones `20260723090100` a `20260723091800`**.
+Estado: **alineado con migraciones `20260723090100` a `20260729010000`**.
 
 ## Convenciones
 
@@ -21,18 +21,18 @@ Todas las FK son restrictivas; no hay cascadas de borrado.
 
 ## Identidad y alcance neutral
 
-| Tabla                 | Campos propios principales                                                     | Relaciones/invariantes                                                                                |
-| --------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| `app_users`           | `auth_subject`, nombre, correo, preautorización, actividad, revocación, acento | `auth_subject` y correo normalizado únicos; revocación completa                                       |
-| `roles`               | código, nombre, descripción, sistema                                           | código único; archivable                                                                              |
-| `permissions`         | código, nombre, `module_code`                                                  | código único; archivable                                                                              |
-| `user_roles`          | usuario, rol, vigencia, revocación                                             | una asignación activa; versionada, revocable y sin borrado; no define por sí sola alcance de Proyecto |
-| `role_permissions`    | rol, permiso, concesión/revocación                                             | una concesión activa; versionada, revocable y sin borrado                                             |
-| `specialties`         | código, nombre, descripción                                                    | catálogo archivable                                                                                   |
-| `user_specialties`    | usuario, especialidad                                                          | un vínculo activo; versionado/archivable y sin borrado                                                |
-| `user_devices`        | usuario, etiqueta, plataforma, último uso                                      | varios dispositivos por usuario                                                                       |
-| `project_memberships` | Proyecto, usuario, inicio/fin                                                  | una membresía activa; ancla directa del alcance del Técnico para el Proyecto completo                 |
-| `work_memberships`    | Proyecto, Trabajo, usuario, inicio/fin                                         | una membresía activa; FK compuesta valida el Trabajo; por sí sola no concede acceso al Técnico        |
+| Tabla                 | Campos propios principales                                                                        | Relaciones/invariantes                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `app_users`           | `auth_subject`, nombre, correo, preautorización, actividad, revocación, acento, tema, orden móvil | `auth_subject` y correo normalizado únicos; preferencias propias versionadas, validadas y auditadas   |
+| `roles`               | código, nombre, descripción, sistema                                                              | código único; archivable                                                                              |
+| `permissions`         | código, nombre, `module_code`                                                                     | código único; archivable                                                                              |
+| `user_roles`          | usuario, rol, vigencia, revocación                                                                | una asignación activa; versionada, revocable y sin borrado; no define por sí sola alcance de Proyecto |
+| `role_permissions`    | rol, permiso, concesión/revocación                                                                | una concesión activa; versionada, revocable y sin borrado                                             |
+| `specialties`         | código, nombre, descripción                                                                       | catálogo archivable                                                                                   |
+| `user_specialties`    | usuario, especialidad                                                                             | un vínculo activo; versionado/archivable y sin borrado                                                |
+| `user_devices`        | usuario, etiqueta, plataforma, último uso                                                         | varios dispositivos por usuario                                                                       |
+| `project_memberships` | Proyecto, usuario, inicio/fin                                                                     | una membresía activa; ancla directa del alcance del Técnico para el Proyecto completo                 |
+| `work_memberships`    | Proyecto, Trabajo, usuario, inicio/fin                                                            | una membresía activa; FK compuesta valida el Trabajo; por sí sola no concede acceso al Técnico        |
 
 ## Administración y configuración
 

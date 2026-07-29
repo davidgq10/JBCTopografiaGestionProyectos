@@ -33,5 +33,5 @@ export function ProtectedLayout() {
   if (profile.isPending) return <LoadingState label="Aplicando permisos de su perfil…" />;
   if (profile.isError || !profile.data)
     return <PermissionState message={userFacingError(profile.error)} />;
-  return <AppNavigation />;
+  return <AppNavigation mobileNavItems={profile.data.mobileNavItems} />;
 }

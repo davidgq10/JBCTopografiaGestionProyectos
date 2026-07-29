@@ -5,6 +5,7 @@ import {
   InvalidProfileVersionError,
   loadOwnAppearanceProfile,
   updateOwnAppearance,
+  updateOwnMobileNavigation,
 } from './appearance-profile.js';
 
 const profile: AppearanceProfile = {
@@ -13,6 +14,7 @@ const profile: AppearanceProfile = {
   email: 'tecnica@example.test',
   preferredAccent: 'teal',
   preferredTheme: 'auto',
+  mobileNavItems: ['agenda', 'avisos', 'cuenta'],
   version: 1,
   updatedAt: '2026-07-24T00:00:00.000Z',
 };
@@ -28,6 +30,11 @@ function createPort(): AppearanceProfilePort {
         preferredTheme,
         version: 2,
       })),
+    updateOwnMobileNavigation: vi.fn().mockImplementation(async ({ mobileNavItems }) => ({
+      ...profile,
+      mobileNavItems,
+      version: 2,
+    })),
   };
 }
 
@@ -86,5 +93,29 @@ describe('casos de uso de apariencia', () => {
       }),
     ).rejects.toThrow('Sistema, Claro u Oscuro');
     expect(port.updateOwnAppearance).not.toHaveBeenCalled();
+  });
+
+  it('valida y delega el orden de navegación móvil', async () => {
+    const port = createPort();
+    await updateOwnMobileNavigation(port, {
+      mobileNavItems: ['proyectos', 'tareas', 'avisos'],
+      expectedVersion: 1,
+    });
+
+    expect(port.updateOwnMobileNavigation).toHaveBeenCalledWith({
+      mobileNavItems: ['proyectos', 'tareas', 'avisos'],
+      expectedVersion: 1,
+    });
+  });
+
+  it('rechaza accesos repetidos en navegación móvil', async () => {
+    const port = createPort();
+    await expect(
+      updateOwnMobileNavigation(port, {
+        mobileNavItems: ['agenda', 'agenda', 'avisos'],
+        expectedVersion: 1,
+      }),
+    ).rejects.toThrow('tres accesos distintos');
+    expect(port.updateOwnMobileNavigation).not.toHaveBeenCalled();
   });
 });

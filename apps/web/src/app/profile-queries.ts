@@ -1,7 +1,9 @@
 import {
   loadOwnAppearanceProfile,
   updateOwnAppearance,
+  updateOwnMobileNavigation,
   type AppearanceProfile,
+  type MobileNavigationSelection,
 } from '@jbc/application';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -29,6 +31,18 @@ export function useUpdateOwnAppearance() {
       preferredTheme: string;
       expectedVersion: number;
     }) => updateOwnAppearance(services.profile, input),
+    onSuccess: (profile: AppearanceProfile) => {
+      queryClient.setQueryData(ownProfileQueryKey, profile);
+    },
+  });
+}
+
+export function useUpdateOwnMobileNavigation() {
+  const services = useServices();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { mobileNavItems: MobileNavigationSelection; expectedVersion: number }) =>
+      updateOwnMobileNavigation(services.profile, input),
     onSuccess: (profile: AppearanceProfile) => {
       queryClient.setQueryData(ownProfileQueryKey, profile);
     },

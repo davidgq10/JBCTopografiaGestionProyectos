@@ -264,6 +264,64 @@ components:
     ContractVersion:
       type: integer
       const: 1
+    AccentPreference:
+      oneOf:
+        - type: string
+          enum: [teal, azul, indigo, violeta, rosa, naranja]
+        - type: string
+          pattern: '^#[0-9A-F]{6}$'
+    ThemePreference:
+      type: string
+      enum: [auto, light, dark]
+    MobileNavigationItem:
+      type: string
+      enum: [agenda, avisos, cuenta, proyectos, tareas]
+    MobileNavigationItems:
+      type: array
+      minItems: 3
+      maxItems: 3
+      uniqueItems: true
+      items: { $ref: '#/components/schemas/MobileNavigationItem' }
+    AppearanceProfile:
+      type: object
+      additionalProperties: false
+      required:
+        - contractVersion
+        - id
+        - displayName
+        - email
+        - preferredAccent
+        - preferredTheme
+        - mobileNavItems
+        - version
+        - updatedAt
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        id: { type: string, format: uuid }
+        displayName: { type: string, minLength: 1, maxLength: 200 }
+        email: { type: string, format: email }
+        preferredAccent: { $ref: '#/components/schemas/AccentPreference' }
+        preferredTheme: { $ref: '#/components/schemas/ThemePreference' }
+        mobileNavItems: { $ref: '#/components/schemas/MobileNavigationItems' }
+        version: { type: integer, minimum: 1 }
+        updatedAt: { $ref: '#/components/schemas/UtcInstant' }
+    UpdateOwnAppearanceCommandBody:
+      type: object
+      additionalProperties: false
+      required: [contractVersion, preferredAccent, preferredTheme, expectedVersion]
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        preferredAccent: { $ref: '#/components/schemas/AccentPreference' }
+        preferredTheme: { $ref: '#/components/schemas/ThemePreference' }
+        expectedVersion: { type: integer, minimum: 1 }
+    UpdateOwnMobileNavigationCommandBody:
+      type: object
+      additionalProperties: false
+      required: [contractVersion, mobileNavItems, expectedVersion]
+      properties:
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+        mobileNavItems: { $ref: '#/components/schemas/MobileNavigationItems' }
+        expectedVersion: { type: integer, minimum: 1 }
     UtcInstant:
       type: string
       format: date-time

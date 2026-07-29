@@ -23,6 +23,12 @@ import {
   type Icon,
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
+import {
+  DEFAULT_MOBILE_NAVIGATION,
+  parseMobileNavigationSelection,
+  type MobileNavigationItem,
+  type MobileNavigationSelection,
+} from '@jbc/application';
 import { type ReactNode, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 
@@ -34,6 +40,7 @@ interface NavigationItem {
   label: string;
   to: string;
   icon: Icon;
+  code?: MobileNavigationItem;
 }
 
 const desktopItems: NavigationItem[] = [
@@ -45,18 +52,44 @@ const desktopItems: NavigationItem[] = [
   { label: 'Cuenta', to: '/perfil/apariencia', icon: IconUserCircle },
 ];
 
-const mobileItems: NavigationItem[] = [
-  { label: 'Inicio', to: '/', icon: IconHome },
-  { label: 'Agenda', to: '/agenda', icon: IconCalendar },
-  { label: 'Avisos', to: '/notificaciones', icon: IconBell },
-  { label: 'Cuenta', to: '/perfil/apariencia', icon: IconUserCircle },
-];
+const mobileNavigationItems: Record<MobileNavigationItem, NavigationItem> = {
+  agenda: { code: 'agenda', label: 'Agenda', to: '/agenda', icon: IconCalendar },
+  avisos: { code: 'avisos', label: 'Avisos', to: '/notificaciones', icon: IconBell },
+  cuenta: { code: 'cuenta', label: 'Cuenta', to: '/perfil/apariencia', icon: IconUserCircle },
+  proyectos: { code: 'proyectos', label: 'Proyectos', to: '/proyectos', icon: IconClipboardText },
+  tareas: { code: 'tareas', label: 'Tareas', to: '/tareas', icon: IconCheckupList },
+};
 
-const mobileMoreItems: NavigationItem[] = [
-  { label: 'Proyectos', to: '/proyectos', icon: IconClipboardText },
-  { label: 'Tareas', to: '/tareas', icon: IconCheckupList },
-  { label: 'Configuración', to: '/configuracion', icon: IconSettings },
-];
+const mobileHomeItem: NavigationItem = { label: 'Inicio', to: '/', icon: IconHome };
+const mobileConfigurationItem: NavigationItem = {
+  label: 'Configuración',
+  to: '/configuracion',
+  icon: IconSettings,
+};
+
+function resolveMobileNavigation(
+  items: readonly MobileNavigationItem[],
+): MobileNavigationSelection {
+  try {
+    return parseMobileNavigationSelection(items);
+  } catch {
+    return DEFAULT_MOBILE_NAVIGATION;
+  }
+}
+
+function buildMobileNavigationItems(selection: MobileNavigationSelection): NavigationItem[] {
+  return [mobileHomeItem, ...selection.map((code) => mobileNavigationItems[code])];
+}
+
+function buildMobileMoreItems(selection: MobileNavigationSelection): NavigationItem[] {
+  const selected = new Set(selection);
+  return [
+    ...Object.values(mobileNavigationItems).filter(
+      (item) => item.code !== undefined && !selected.has(item.code),
+    ),
+    mobileConfigurationItem,
+  ];
+}
 
 function DesktopNavigationLink({ item, expanded }: { item: NavigationItem; expanded: boolean }) {
   const location = useLocation();
@@ -76,11 +109,11 @@ function DesktopNavigationLink({ item, expanded }: { item: NavigationItem; expan
   return expanded ? content : <Tooltip label={item.label}>{content}</Tooltip>;
 }
 
-function MobileMoreNavigation() {
+function MobileMoreNavigation({ items }: { items: NavigationItem[] }) {
   const [opened, setOpened] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const location = useLocation();
-  const moreActive = mobileMoreItems.some(({ to }) => location.pathname.startsWith(to));
+  const moreActive = items.some(({ to }) => location.pathname.startsWith(to));
 
   const close = () => setOpened(false);
 
@@ -107,11 +140,11 @@ function MobileMoreNavigation() {
         position="bottom"
         size={280}
         title="Más opciones"
-        closeButtonProps={{ 'aria-label': 'Cerrar más opciones' }}
+        closeButtonProps={{ 'aria-label': 'Cerrar más opciones', size: 44 }}
         returnFocus
       >
         <Stack gap={4} pb="xs">
-          {mobileMoreItems.map((item) => {
+          {items.map((item) => {
             const active = location.pathname.startsWith(item.to);
             return (
               <MantineNavLink
@@ -132,10 +165,19 @@ function MobileMoreNavigation() {
   );
 }
 
-export function AppNavigation({ content }: { content?: ReactNode }) {
+export function AppNavigation({
+  content,
+  mobileNavItems = DEFAULT_MOBILE_NAVIGATION,
+}: {
+  content?: ReactNode;
+  mobileNavItems?: readonly MobileNavigationItem[];
+}) {
   const [expanded, setExpanded] = useState(true);
   const toggleRef = useRef<HTMLButtonElement>(null);
   const { signOut } = useAuth();
+  const mobileSelection = resolveMobileNavigation(mobileNavItems);
+  const visibleMobileItems = buildMobileNavigationItems(mobileSelection);
+  const moreMobileItems = buildMobileMoreItems(mobileSelection);
 
   const handleSignOut = async () => {
     try {
@@ -236,7 +278,7 @@ export function AppNavigation({ content }: { content?: ReactNode }) {
         component="nav"
         aria-label="Navegación inferior"
       >
-        {mobileItems.map((item) => (
+        {visibleMobileItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -246,7 +288,7 @@ export function AppNavigation({ content }: { content?: ReactNode }) {
             <span>{item.label}</span>
           </NavLink>
         ))}
-        <MobileMoreNavigation />
+        <MobileMoreNavigation items={moreMobileItems} />
       </AppShell.Footer>
     </AppShell>
   );

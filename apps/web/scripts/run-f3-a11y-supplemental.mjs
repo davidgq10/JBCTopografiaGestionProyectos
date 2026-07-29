@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 
+import AxeBuilder from '@axe-core/playwright';
 import { chromium, devices, webkit } from '@playwright/test';
 
 const port = 4175;
@@ -66,9 +67,28 @@ async function runCase(label, browserType, contextOptions, launchOptions = {}) {
         throw new Error(`${label}: se detectó overflow horizontal.`);
       }
 
+      const mobile = (contextOptions.viewport?.width ?? 0) < 768;
+      if (mobile) {
+        await page.getByRole('button', { name: 'Mostrar más opciones' }).click();
+        await page
+          .getByRole('dialog', { name: 'Más opciones' })
+          .getByRole('link', { name: 'Configuración' })
+          .click();
+      } else {
+        await page.getByRole('link', { name: 'Configuración' }).click();
+      }
+      await page.getByRole('heading', { name: 'Panel móvil' }).waitFor();
+      const accessibility = await new AxeBuilder({ page }).analyze();
+      const seriousViolations = accessibility.violations.filter((item) =>
+        ['critical', 'serious'].includes(item.impact ?? ''),
+      );
+      if (seriousViolations.length > 0) {
+        throw new Error(`${label}: Configuración tiene violaciones axe críticas/serias.`);
+      }
+
       console.log(
         `${label} PASS | keyboard focus + no overflow | ` +
-          `inner=${metrics.innerWidth} scroll=${metrics.scrollWidth} client=${metrics.clientWidth}`,
+          `settings axe=0 inner=${metrics.innerWidth} scroll=${metrics.scrollWidth} client=${metrics.clientWidth}`,
       );
     } finally {
       await context.close();

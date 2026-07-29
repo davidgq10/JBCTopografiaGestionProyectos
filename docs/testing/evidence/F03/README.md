@@ -10,6 +10,7 @@ Estado: **P1 técnico cerrado por R4; Entra QA real PASS; P2 físico y aprobaci�
 - [Verificación reproducible del corte 2026-07-28](F03-VERIFICATION-2026-07-28.md)
 - [Accesibilidad suplementaria Edge/WebKit](F03-A11Y-SUPPLEMENTAL-2026-07-28.md)
 - [Navegación móvil secundaria](F03-MOBILE-NAVIGATION-2026-07-28.md)
+- [Preferencia de navegación móvil](F03-MOBILE-NAV-PREFERENCES-2026-07-29.md)
 - [Preparación Entra QA](F03-ENTRA-QA-2026-07-28.md)
 - [Revisión independiente R3 — NO-GO histórico](../../../architecture/reviews/F3/F3-INDEPENDENT-REVIEW-R3-2026-07-24.md)
 - [Revisión independiente R4](../../../architecture/reviews/F3/F3-INDEPENDENT-REVIEW-R4-2026-07-28.md)
